@@ -12,7 +12,8 @@ if __name__ == "__main__":
     roguesfile = open(sys.argv[1],"r")
     outfile = open(roguesfile.name+".names","w")
     for line in roguesfile:
-        outfile.write(line.split()[2]+"\n")
+        for name in line.split()[2].split(","):
+            outfile.write(name + "\n")
 
     outfile.close()
     print "rogue names written to "+outfile.name
