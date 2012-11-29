@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 convertnames.py
 version 0.1

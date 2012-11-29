@@ -4,6 +4,7 @@
 #
 #  Created by Cody on 11/18/11.
 
+"""Pulls out the information in the partitions dict from the passed alignment file and saves it into the outfile"""
 
 partitions = {"psbBTNH": [13965, 16263],
 			  "rps4": [24160, 25260],

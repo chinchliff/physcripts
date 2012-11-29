@@ -2,9 +2,7 @@
 #
 #  oregon_flora_csv_to_kml.py
 #  
-#
-#  Created by Cody on 3/31/11.
-#  Copyright (c) 2011 The Evergreen State College. All rights reserved.
+#  Created by Cody Hinchliff on 3/31/11.
 #
 
 import csv
