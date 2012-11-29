@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6.5
+#!/usr/bin/env python
 #
 #  permute_matrix.py
 #  

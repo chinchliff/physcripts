@@ -1,12 +1,15 @@
-# Use this script to strip all the extra crap that genbank put into
-# taxon names. The script reads .seal files and finds the lines containing
-# taxon names. When a taxon name line is encountered, the script builds
-# a new name and replaces the line.
-#
-# All output is saved to a new file, the original file is not touched.
+#/usr/bin/env python
 
-# Note, right now this will cut out all info except Genus and species...
-# This is a problem when we have subspecies. Need to think about that.
+"""
+Use this script to strip all the extra crap that genbank put into
+taxon names. The script reads .seal files and finds the lines containing
+taxon names. When a taxon name line is encountered, the script builds
+a new name and replaces the line.
+
+All output is saved to a new file, the original file is not touched.
+
+Note, right now this will cut out all info except Genus and species...
+This is a problem when we have subspecies. Need to think about that."""
 
 import sys
 import os

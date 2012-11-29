@@ -4,6 +4,11 @@ import re
 import string
 import sys
 
+"""
+Cleans the namestrings in fasta files downloaded from ncbi, saving only minimal name information with no special characters.
+
+Optionally will use an interactive prompt to allow the user to rename things with names in unrecognized formats"""
+
 def clear_screen():
 	"""Clear screen, return cursor to top left"""
 	sys.stdout.write('\033[2J')
@@ -15,13 +20,13 @@ def bold(msg):
 
 if __name__ == "__main__":
 	if len(sys.argv) < 2:
-		print "usage: fixgbnames_fasta <fasta_file> [<suppress_rename_prompt: y/N>]"
+		print "usage: fixgbnames_fasta <fasta_file> [<suppress_rename_prompt: Y/N>]"
 		sys.exit(0)
 
 	infname = sys.argv[1]
 	suppress_rename_prompt = False
 	if len(sys.argv) > 2:
-		if sys.argv[2] == "Y":
+		if sys.argv[2].upper() == "Y":
 			suppress_rename_prompt = True
 
 	addlchars = 50

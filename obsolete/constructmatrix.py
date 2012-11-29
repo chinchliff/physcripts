@@ -1,7 +1,11 @@
+#!/usr/bin/env python
+
 import sys
 import os
 import cfg_file
 from Bio import SeqIO
+
+"""Not sure what this does anymore (11.29.12) so just putting it in obsolete directory..."""
 
 class marker:
     def __init__(self, mname, mfile):

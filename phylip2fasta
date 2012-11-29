@@ -1,29 +1,33 @@
+#!/usr/bin/env python
+
 import sys
 import os
 from Bio import SeqIO
 
-cwd = os.getcwd() + os.sep
+if __name__ == "__main__":
 
-try:
-    fpath = sys.argv[1]
-except IndexError:
-    exit("The specified file could not be opened.")
+    if len(sys.argv) < 3:
+        print "usage: phylip2fasta <phylipfile> <outfile>"
 
-print "Reading: " + fpath
+    try:
+        inpath = sys.argv[1]
+        infile = open(inpath,"rU")
+    except OSError:
+        exit("There was a problem opening the specified directory. Are you sure it exists? Quitting.")
 
-try:
-	ifile = open(fpath,"rU")
-except OSError:
-    exit("There was a problem opening the specified directory. Are you sure it exists? Quitting.")
+    outfile = open(sys.argv[2] + ".fasta","w")
 
-ofile = open(sys.argv[1] + ".fasta","w")
+    firstline = True
+    for bits in [line.strip().split() for line in infile.readlines()]:
 
+        if len(bits) > 0:
+            if firstline:
+                firstline = False
+                continue
 
-lines = ifile.readlines()
+            name, seq = bits
+            outfile.write(">" + name + "\n")
+            outfile.write(seq + "\n")
 
-for line in lines:
-    bits = line.split()
-    ofile.write(">" + bits[0] + "\n")
-    ofile.write(bits[1] + "\n")
-
-ofile.close()
+    infile.close()
+    outfile.close()

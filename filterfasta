@@ -6,7 +6,7 @@ import os
 """
 Usage:
 
-./filter_fasta.py [path to input dir] [path to accepted taxon list]
+./filter_fasta.py <path to input dir> <path to accepted taxon list>
 
 Input files are expected to be in fasta format. The script will traverse all files
 in the input dir, so the input dir should contain only fasta files. The taxon list
@@ -44,33 +44,39 @@ def filter(ifname, ofname, taxa_approved):
 
 	return ntax
 
-ipath = sys.argv[1]
+if __name__ == "__main__":
 
-if os.path.isdir(ipath):
-	usedir = True
-	
-	if ipath[len(ipath) - 1] != '/':
-		ipath += '/'
-	
-	taxlistpath = sys.argv[2]
-	taxlist = open(taxlistpath, "rU")
-	taxa_approved = [taxon.strip() for taxon in taxlist.readlines()]
+	if len(sys.argv) < 3:
+		print "usage: filterfasta <fastafile> <acceptednamesfile>"
+		sys.exit(0)
 
-	ifiles = os.listdir(ipath)
-	for ifname in ifiles:
-		if ifname[0] != '.':
-		
-			ofname = ifname + "." + "filtered"
-			
-			print "\nfiltering " + ifname + " > " + ifname + ".filtered"
-			
-			ntaxfound = filter(ipath + ifname, ipath + ofname, taxa_approved)
-			
-			if ntaxfound:
-				print "Retained " + str(ntaxfound) + " taxa."
-			else:
-				print "No acceptable taxa found. No output saved."
+	ipath = sys.argv[1]
 
-else:
+	if os.path.isdir(ipath):
+		usedir = True
 
-	print "single case not yet implemented"
+		if ipath[len(ipath) - 1] != '/':
+			ipath += '/'
+
+		taxlistpath = sys.argv[2]
+		taxlist = open(taxlistpath, "rU")
+		taxa_approved = [taxon.strip() for taxon in taxlist.readlines()]
+
+		ifiles = os.listdir(ipath)
+		for ifname in ifiles:
+			if ifname[0] != '.':
+
+				ofname = ifname + "." + "filtered"
+
+				print "\nfiltering " + ifname + " > " + ifname + ".filtered"
+
+				ntaxfound = filter(ipath + ifname, ipath + ofname, taxa_approved)
+
+				if ntaxfound:
+					print "Retained " + str(ntaxfound) + " taxa."
+				else:
+					print "No acceptable taxa found. No output saved."
+
+	else:
+
+		print "single case not yet implemented"

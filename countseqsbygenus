@@ -1,25 +1,27 @@
-"""
-	counttaxa.py
-	version 0.1
-	cody hinchliff
-	2009.10.01
-	
-	edited 2011.11.6
-	
-	This script accesses a directory, and counts the number of sequences in any and all FASTA
-	files found in that directory, binning them by genus, and records the counts into a file
-	called 'counts_by_genus.csv' that may be opened in any conventional spreadsheet or
-	text-editor app. This file will be overwritten if it already exists.
-	
-	To call it, at the command prompt just type:
-	
-	>python count_seqs_by_genus.py [pathtodirectory]/
-	
-	"""
+#!/usr/bin/env python
 
 import sys
 import os
 from Bio import SeqIO
+
+"""
+counttaxa.py
+version 0.1
+cody hinchliff
+2009.10.01
+
+edited 2011.11.6
+
+This script accesses a directory, and counts the number of sequences in any and all FASTA
+files found in that directory, binning them by genus, and records the counts into a file
+called 'counts_by_genus.csv' that may be opened in any conventional spreadsheet or
+text-editor app. This file will be overwritten if it already exists.
+
+"""
+
+if len(sys.argv) < 2:
+    print "usage: countseqsbygenus <dirwithfastas>"
+    sys.exit()
 
 cwd = os.getcwd() + os.sep
 

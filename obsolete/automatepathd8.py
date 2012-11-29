@@ -1,8 +1,4 @@
-#!/usr/bin/env python2.6
-#
-#  automate_pathd8.py
-#  
-#
+#!/usr/bin/env python
 #  Created by Cody on 10/30/11.
 
 import sys

@@ -1,19 +1,22 @@
+#!/usr/bin/env python
+
 from Bio import AlignIO
 
-ifile = "comb.nex"
-iformat = "nexus"
+"""Uses the BioPython parser to convert a nexus file to a fasta"""
 
-ofile = "comb.fasta"
-oformat = "fasta"
+if __name__ == "__main__":
 
-ihandle = open(ifile,"rU")
-ohandle = open(ofile,"w")
+    if len(sys.argv) < 3:
+        print "usage: nex2fasta <nexusfile> <outfile>"
 
-alignment = AlignIO.parse(ihandle,iformat)
+    ifile = sys.argv[1]
+    iformat = "nexus"
 
-AlignIO.write(alignment,ohandle,oformat)
+    ofile = sys.argv[2]
+    oformat = "fasta"
 
-#print "Alignment length %i" % alignment.get_alignment_length()
+    ihandle = open(ifile,"r")
+    ohandle = open(ofile,"w")
 
-#for record in alignment :
-#    print record.seq, record.id
+    alignment = AlignIO.parse(ihandle,iformat)
+    AlignIO.write(alignment,ohandle,oformat)

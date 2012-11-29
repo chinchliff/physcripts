@@ -1,15 +1,14 @@
 #!/usr/bin/env python
-#
-#  subsample_trees_nex.py
-#  
-#  Created by Cody on 8/26/11.
-#
+
+"""Saves every samplingfreq'th tree in the input file to the output file.
+Requires the input file to be in nexus format; the output file is just a
+list of newick tree strings."""
 
 import sys
 import os
 
 if len(sys.argv) < 4:
-	exit("Usage: \n\n./sunsample_trees_nex.py [infile] [outfile] [tree sampling frequency]\n")
+	exit("usage: \n\n./sunsample_trees_nex.py <infile> <outfile> <samplingfreq>")
 
 try:
 	relpath = sys.argv[1]
