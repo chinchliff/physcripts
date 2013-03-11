@@ -17,10 +17,10 @@ if __name__ == "__main__":
     listtype, namesfile = sys.argv[2].split("=")
     
 
-    if listtype == "excluded" or listtype == "included":
+    if listtype == "excluded" or listtype == "accepted":
         names = [n.strip() for n in open(namesfile,"r").readlines()]
     else:
-        print "unrecognized type for names list; please use 'excluded' or 'included'"
+        print "unrecognized type for names list; please use 'excluded' or 'accepted'"
         sys.exit(0)
 
     while True:
@@ -33,18 +33,21 @@ if __name__ == "__main__":
 
     saved = list()
 
+    ntax = 0
     for name, seq in [line.split() for line in infile]:
 
         if listtype == "excluded":
             if name in names:
+#                ntax -= 1
                 continue
 
-        elif listtype == "included":
+        elif listtype == "accepted":
             if name not in names:
+#                ntax += 1
                 continue
 
         saved.append(name + " " + seq + "\n")
-        ntax -= 1
+        ntax += 1
 
     outfile.write(str(ntax) + " " + str(nsites) + "\n")
 

@@ -3,7 +3,7 @@
 import dendropy
 import sys
 
-"""
+desc = """
 Will root a set of trees using a line-delimited list of taxon names to be included in the outgroup.
 Requires dendropy to read and manipulate trees, thus accepts any input treefile readable by dendropy,
 though the format must be specified if other than newick.
@@ -12,6 +12,7 @@ though the format must be specified if other than newick.
 if __name__ == "__main__":
 
     if len(sys.argv) < 3:
+        print desc
         print "usage: roottrees <treesfile> <outgroupfile> <outfile> [<format=newick|nexus|etc>]"
         sys.exit(0)
 
