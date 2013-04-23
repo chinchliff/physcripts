@@ -1,0 +1,159 @@
+#!/bin/bash
+#update-java
+PROG_VERSION='java-update_v0.5beta';  #spaces not allowed
+HELP='Easy way to maintain default Java version in $PATH';
+
+#Copyright 2010, Bruce Ingalls GPL 3 Affero see http://www.gnu.org/ for details
+#Downloads & discussion at http://www.webupd8.org/
+#Contact bingalls at users dot sf dot net for licensing & additional help
+#Currently supports Ubuntu, only. Likely less useful for RPM based Linux distros.
+#Currently supports only full java jdk, not jre.
+#Note that update-alternatives by default misses many java tools, such as 'jar'
+#Known bugs:
+#  Evaled zenity msgs cannot handle spaces
+#  Cancelling gksudo takes half a minute.
+#  Sun does not install JRE in a standard location (but JDK is always /usr/local/)
+#  Does not check for Japanese environment & man pages
+
+#BEGIN User Customizations
+
+SUN_ROOT='/usr/local';
+UBUNTU_ROOT='/usr/lib/jvm';
+
+#i18n. Change for non-english
+CHOOSE_MSG='Choose';                                   #button column
+COMPRESS_MSG='Enter_sudo_password_to_compress_Java_man_pages'; #spaces not allowed
+DELETE_CONFIRM_MSG='OK_to_delete_these_Java_directories?';     #spaces not allowed
+DELETE_JAVA_MSG='Choose_any_Java_versions_to_DELETE!'; #Title, spaces not allowed
+JAVA_VERSION_MSG='Version';                            #JAVA listing column
+SELECT_JAVA_MSG='Choose_Java_version_to_update_to';    #Title, spaces not allowed
+
+#END User Customizations
+
+#Assume that any arg means combined help & version
+if [ $1 ]; then
+    echo $PROG_VERSION;
+    echo $HELP;
+    exit;
+fi    
+
+#If locate is active for this system, then we must add the new install.
+#Running in background to avoid waiting, but might not progress adequately, before its use, below
+if [ ! -z /var/lib/mlocate/mlocate.db ]; then
+    gksudo updatedb&
+fi
+
+#Install zenity, if necessary (Assumes debian)
+which zenity > /dev/null;
+if [ $? -gt 0 ]; then
+    gksudo -- apt-get install zenity;
+fi
+
+#load current java link
+jdefault=`ls -dog /etc/alternatives/java 2>/dev/null | awk '{print $8}' | sed 's|/bin/java||'`
+
+#Prepare a zenity check button dialog box
+#Zenity v2.30 will support --no-cancel https://bugzilla.gnome.org/show_bug.cgi?id=593926
+CHECK="zenity --list --checklist --text $DELETE_JAVA_MSG --column $CHOOSE_MSG --title $PROG_VERSION --column $JAVA_VERSION_MSG"
+
+#Prepare a Zenity radio button dialog box
+RADIO="zenity --list --radiolist --text $SELECT_JAVA_MSG --column $CHOOSE_MSG --title $PROG_VERSION --column $JAVA_VERSION_MSG"
+
+#Populate the dialog box with all known means to locate jre directories
+#Should we skip apt-get java installations ($UBUNTU_ROOT)?
+#    ls -1d $UBUNTU_ROOT/java-* 2>/dev/null;
+#declare -a DEL_JAVADIRS  deprecate this line
+DEL_JAVADIRS=$(
+    ls -1d $SUN_ROOT/jdk* 2>/dev/null;
+    locate bin/java_vm | grep jre1. | sed 's|/bin/java_vm||'  ||
+    beagle-query bin/java_vm | grep jre1. | sed 's|/bin/java_vm||' | sed 's|file://||' 2>/dev/null
+    )
+
+for j in ${DEL_JAVADIRS[*]}; do
+    CHECK=$CHECK" FALSE "$j;
+done
+
+#Grab all the Java directories to be uninstalled
+if [ ${#DEL_JAVADIRS} -gt 0 ]; then
+    DELDIR=`$CHECK`;
+fi
+if [ ${#DELDIR} -gt 0 ]; then
+    zenity --question --text $DELETE_CONFIRM_MSG --title $PROG_VERSION;
+    if [ $? -eq 0 ]; then
+        DELETE=`echo ${DELDIR[*]}|tr '|' ' '`;
+        `gksudo -- rm -fr $DELETE`;
+        for j in ${deldir[*]}; do
+            for f in "$j/man/man1/*"; do
+                name=`basename $f .1.gz`;
+                if [ ! -f "$j/man/man1/$name.1.gz" ]; then
+                    name=`basename $f .1`;          #handle any legacy uncompressed pages
+                fi
+                gksudo -- update-alternatives --remove $name $j/bin/$name
+            done
+            #File links without man pages
+            gksudo -- update-alternatives --remove java_vm $j/bin/java_vm
+            gksudo -- update-alternatives --remove jcontrol $j/bin/jcontrol
+            
+            #File links that apt-get misses
+            gksudo -- update-alternatives --remove libnpjp2.so $j/jre/lib/i386/libnpjp2.so
+       done
+    fi
+fi
+
+#Populate the dialog box with located jre directories
+#declare -a JAVADIRS
+JAVADIRS=$(
+    ls -1d $UBUNTU_ROOT/java-* 2>/dev/null;
+    ls -1d $UBUNTU_ROOT/jdk-* 2>/dev/null;
+    ls -1d $UBUNTU_ROOT/jdk* 2>/dev/null;
+    ls -1d $SUN_ROOT/jdk* 2>/dev/null;
+    locate bin/java_vm | grep jre1. | sed 's|/bin/java_vm||'  ||
+    beagle-query bin/java_vm | grep jre1. | sed 's|/bin/java_vm||' | sed 's|file://||' 2>/dev/null
+    )
+
+for j in ${JAVADIRS[*]}; do
+    if [ $j == $jdefault ];then
+        RADIO=$RADIO" TRUE "$j;
+    else
+        RADIO=$RADIO" FALSE "$j;
+    fi
+done
+
+#Grab the new Java link from the radio dialog box 
+NEWDIR=`$RADIO`;
+gksudo -D $COMPRESS_MSG -- gzip -9 $NEWDIR/man/man1/*.1 >/dev/null 2>&1 &
+
+if [ $? -gt 0 ]; then exit 2; fi                #cancel clicked
+if [[ $NEWDIR == '' ]]; then exit 3; fi   #OK clicked, but no selection
+
+#Increment highest version by 1. DEPENDS on update-alternative msg formatting (in English)!
+#Also assumes all Java helper programs (javaws, jcontrol, etc) at same version as java
+LATEST=$((`update-alternatives --query java|grep Priority:|awk '{print $2}'|sort -n|tail -1`+1));
+
+#This will issue ignorable warnings for alternatives that are not part of a group
+if [ -d "$NEWDIR/man/man1" ];then
+    for f in $NEWDIR/man/man1/*; do
+        name=`basename $f .1.gz`;
+        #some files, like jvisualvm might not be links. Further assume this for corresponding man page
+        if [ ! -f "/usr/bin/$name" -o -L "/usr/bin/$name" ]; then  
+            if [ ! -f "$NEWDIR/man/man1/$name.1.gz" ]; then
+                name=`basename $f .1`;          #handle any legacy uncompressed pages
+            fi
+            gksudo -- update-alternatives --install /usr/bin/$name $name $NEWDIR/bin/$name $LATEST --slave /usr/share/man/man1/$name.1.gz $name.1.gz $NEWDIR/man/man1/$name.1.gz
+        fi
+    done
+    #File links without man pages
+    [ -f $NEWDIR/bin/java_vm ]     && gksudo -- update-alternatives --install /usr/bin/java_vm     java_vm     $NEWDIR/jre/bin/java_vm $LATEST
+    [ -f $NEWDIR/bin/jcontrol ]    && gksudo -- update-alternatives --install /usr/bin/jcontrol    jcontrol    $NEWDIR/bin/jcontrol    $LATEST
+else  #no man pages available
+    for f in $NEWDIR/bin/*; do
+        name=`basename $f`;
+        if [ ! -f "/usr/bin/$name" -o -L "/usr/bin/$name" ]; then  #some files, like jvisualvm might not be links
+            gksudo -- update-alternatives --install /usr/bin/$name $name $NEWDIR/bin/$name $LATEST
+        fi
+    done
+fi
+
+
+#File links that apt-get misses
+[ -f $NEWDIR/bin/libnpjp2.so ] && gksudo -- update-alternatives --install /usr/lib/mozilla/plugins/libnpjp2.so libnpjp2.so $NEWDIR/jre/lib/i386/libnpjp2.so $LATEST
