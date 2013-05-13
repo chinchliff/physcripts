@@ -2,8 +2,8 @@
 
 import newick3, phylo3, numpy, sys
 
-if len(sys.argv) < 2:
-    print "usage: prunetips <namestoprune> <treefile> <outfile>"
+if len(sys.argv) < 4:
+    print "usage: prunetips <namestoprunefile> <treefile> <outfile>"
     sys.exit()
 
 badnamesfname = sys.argv[1]

@@ -1,0 +1,80 @@
+#!/usr/bin/env python
+import sys, sqlite3, newick3, phylo3
+#from copy import deepcopy as copy
+
+if __name__ == "__main__":
+
+    if len(sys.argv) < 5:
+#        print "usage: testmonophylyagainsttree <phlawddb> rank=<rank> [include=\"<tx1>,<tx2>,...\"] " \
+#            "[includefile=<file>] [exclude=\"<tx3>,<tx4>,...\"]"
+        print "usage: testmonophylyagainsttree <phlawddb> <treefile> rank=<rank> [include=\"<tx1>,<tx2>,...\"] [includefile=<file>]"
+        sys.exit(0)
+
+    # process command line args
+    dbname = sys.argv[1]
+    treefname = sys.argv[2]
+
+    # initializing parameters
+    target_rank = ""
+    cladenames = []
+#    exclude_names = []
+
+    for arg in sys.argv[3:]:
+        argname, argval = arg.split("=")
+
+        if argname == "rank":
+            target_rank = argval.strip()
+
+        elif argname == "include":
+            cladenames = [n.strip() for n in argval.split(",")]
+
+        elif argname == "includefile":
+            includenamesfile = open(argval,"r")
+            cladenames = [n.strip() for n in includenamesfile.readlines()]
+            includenamesfile.close()
+
+#        elif argname == "exclude":
+#            exclude_names = [n.strip() for n in argval.split(",")]
+
+    assert(len(cladenames) > 0)
+    assert(target_rank != "")
+
+    test_tree = newick3.parse(open(treefname,"r"))
+
+    print "will assess monophyly for taxa of rank '" + target_rank + "'"
+
+    con = sqlite3.connect(dbname)
+    cur = con.cursor()
+
+    included_taxa = {}
+    for name in cladenames:
+        cur.execute("SELECT name, left_value, right_value FROM taxonomy WHERE name_class == 'scientific name' AND name LIKE ?",(name,))
+        for curname, leftval, rightval in cur.fetchall():
+            print "including " + name
+            included_taxa[name] = (leftval, rightval)
+    
+    print ""
+    for incl_name, rl_values in included_taxa.iteritems():
+
+        print "now searching " + incl_name
+
+        cur.execute("SELECT name, id, left_value, right_value FROM taxonomy WHERE name_class == 'scientific name' " \
+                    "AND node_rank == ? AND left_value > ? AND right_value < ?",(target_rank, rl_values[0], rl_values[1]))
+        results = cur.fetchall()
+
+        for tax_name, tax_id, tax_leftval, tax_rightval in results:
+        
+            cur.execute("SELECT name FROM taxonomy WHERE name_class == 'scientific name' AND left_value > ? AND right_value < ?", \
+                            (tax_leftval,tax_rightval))
+
+            taxo_mrca_names = [n[0] for n in cur.fetchall()]
+            
+            print tax_name
+#            print names
+
+            tree_mrca = phylo3.getMRCA(test_tree, taxo_mrca_names)
+            tree_mrca_names = [n.label for n in tree_mrca.descendants() if n.label != None]
+            
+            print set(tree_mrca_names) - set(taxo_mrca_names)
+
+#            exit()
