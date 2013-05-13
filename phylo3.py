@@ -53,6 +53,12 @@ class Node:
     def leaves(self):
         return [ n for n in self.iternodes() if n.istip ]
 
+    def get_node_for_name(self, inname):
+        for node in self.iternodes():
+            if node.label == inname:
+                return node
+        return None
+
     def iternodes(self, order=PREORDER, v=None):
         """
         returns a list of nodes descendant from self - including self
@@ -215,6 +221,17 @@ class Node:
                         break
             
         return d
+        
+    def get_path_to_root(self):
+        path = []
+        parent = self.parent
+        while parent != None:
+            path.append(parent);
+#                if parent.parent != None:
+            parent = parent.parent
+#           else:
+#                break
+        return path
 
 def node2size(node, d=None):
     "map node and descendants to number of descendant tips"
@@ -248,27 +265,70 @@ def reroot(oldroot, newroot):
         cp.length = node.length
     return newroot
 
-
-def getMRCA(innames, tree):
+def getMRCA(tree, innames):
     mrca = None
     if len(innames) == 1:
-        return None
-    else:
-        outgroup = []
-        for name in innames:
-            for i in range(len(tree.leaves())):
-                if tree.leaves()[i].label == name:
-                    outgroup.append(tree.leaves()[i])
-                    #print tree.leaves[i].label
-        cur2 = None
-        tempmrca = None
-        cur1 = outgroup.pop()
-        while len(outgroup)>0:
-            cur2 = outgroup.pop()
-            tempmrca = getMRCATraverse(cur1,cur2)
-            cur1 = tempmrca
-        mrca = cur1
-    return mrca
+        return innames[0]
+    
+    i = 0
+    firstnode = None
+    while firstnode == None:
+        firstnode = tree.get_node_for_name(innames[i])
+        i += 1
+    
+    # get path to root from first inname
+#    print "first name found " + innames[i - 1]
+    guide_path = firstnode.get_path_to_root()
+    mrca_index = 0
+    
+    # compare first path against the others
+    for j in range(i, len(innames)):
+
+        child_node = tree.get_node_for_name(innames[j])
+        if child_node != None:
+            compare_path = child_node.get_path_to_root()
+ 
+#            print "looking for ancestor with " + innames[j]
+            cand_mrca_index = get_first_mrca_index_for_paths(guide_path, compare_path)
+            if cand_mrca_index > mrca_index:
+                mrca_index = cand_mrca_index
+#                print "mrca index", mrca_index
+
+#    print len(guide_path)
+    return guide_path[mrca_index]
+            
+
+def get_first_mrca_index_for_paths(guide_path, compare_path):
+    for comp_node in compare_path:
+        for k in range(len(guide_path)):
+#            print "testing ", guide_path[k]
+#            print "against ", comp_node
+            if guide_path[k] == comp_node:
+#                print "they match "
+                return k
+    
+#        candidate_mrca = getMRCATraverse
+
+#def getMRCA(innames, tree):
+#    mrca = None
+#    if len(innames) == 1:
+#        return None
+#    else:
+#        outgroup = []
+#        for name in innames:
+#            for i in range(len(tree.leaves())):
+#                if tree.leaves()[i].label == name:
+#                    outgroup.append(tree.leaves()[i])
+#                    #print tree.leaves[i].label
+#        cur2 = None
+#        tempmrca = None
+#        cur1 = outgroup.pop()
+#        while len(outgroup)>0:
+#            cur2 = outgroup.pop()
+#            tempmrca = getMRCATraverse(cur1,cur2)
+#            cur1 = tempmrca
+#        mrca = cur1
+#    return mrca
 
 def getMRCATraverse(curn1, curn2):
     mrca = None
