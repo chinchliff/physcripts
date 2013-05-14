@@ -266,18 +266,21 @@ def reroot(oldroot, newroot):
     return newroot
 
 def getMRCA(tree, innames):
-    mrca = None
-    if len(innames) == 1:
-        return innames[0]
-    
+
+    # find a name in the tree to start from
     i = 0
     firstnode = None
     while firstnode == None:
+        # if we don't match any names
+        if i >= len(innames):
+            return None
         firstnode = tree.get_node_for_name(innames[i])
         i += 1
+
+    # if we matched a name but there aren't any others to check
+    if i == len(innames):
+        return firstnode
     
-    # get path to root from first inname
-#    print "first name found " + innames[i - 1]
     guide_path = firstnode.get_path_to_root()
     mrca_index = 0
     
@@ -288,13 +291,13 @@ def getMRCA(tree, innames):
         if child_node != None:
             compare_path = child_node.get_path_to_root()
  
-#            print "looking for ancestor with " + innames[j]
+#            print "looking for ancestor with " + innames[j] # testing
             cand_mrca_index = get_first_mrca_index_for_paths(guide_path, compare_path)
             if cand_mrca_index > mrca_index:
                 mrca_index = cand_mrca_index
-#                print "mrca index", mrca_index
+#                print "mrca index", mrca_index # testing
 
-#    print len(guide_path)
+#    print len(guide_path) # testing
     return guide_path[mrca_index]
             
 

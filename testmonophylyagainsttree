@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import sys, sqlite3, newick3, phylo3
-#from copy import deepcopy as copy
 
 if __name__ == "__main__":
 
@@ -53,7 +52,13 @@ if __name__ == "__main__":
             print "including " + name
             included_taxa[name] = (leftval, rightval)
     
-    print ""
+    out_prefix = "_".join(included_taxa)
+    if len(out_prefix) > 40:
+        out_prefix = out_prefix[0:40] + "_etc"
+    out_prefix = out_prefix + "_" + target_rank
+    outfile = open(out_prefix + ".monophyly.csv","w")
+    outfile.write("taxon,monophyletic,offending_names\n")
+
     for incl_name, rl_values in included_taxa.iteritems():
 
         print "now searching " + incl_name
@@ -68,13 +73,21 @@ if __name__ == "__main__":
                             (tax_leftval,tax_rightval))
 
             taxo_mrca_names = [n[0] for n in cur.fetchall()]
-            
+
+            if len(taxo_mrca_names) < 1:
+                continue
+
             print tax_name
-#            print names
 
             tree_mrca = phylo3.getMRCA(test_tree, taxo_mrca_names)
             tree_mrca_names = [n.label for n in tree_mrca.descendants() if n.label != None]
             
-            print set(tree_mrca_names) - set(taxo_mrca_names)
+            monophyly = False
+            offending_names = set(tree_mrca_names) - set(taxo_mrca_names)
+            if len(offending_names) == 0:
+                monophyly = True
 
-#            exit()
+            outfile.write(",".join([tax_name, str(monophyly), " | ".join(offending_names)]) + "\n")
+            outfile.flush()
+
+    outfile.close()
