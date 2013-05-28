@@ -12,61 +12,42 @@ badnames = [name.strip() for name in badnamesfile.readlines()]
 
 treefname = sys.argv[2]
 treefile = open(treefname, "r")
-tree = newick3.parse(treefile.readline())
-
 outfname = sys.argv[3]
-
-# prune the bad tips
-for tip in tree.leaves():
-
-    name_ok = False
-
-    if tip.label in badnames:
-        leftlabel = tip.label
-        print "removing " + leftlabel
-        tip.prune()
-
-        # compress knuckle if there is one
-#        if len(parent.children) == 1:
-#            child = parent.children[0]
-#            if child.label != None:
-#                rightlabel = child.label
-#            else:
-#                rightlabel = ", ".join([leaf.label for leaf in child.leaves()])
-#                
-#            print "compressing a knuckle in the tree: " + leftlabel + " | " + rightlabel
-#
-#            pp = parent.parent
-#            pp.remove_child(parent)
-#            pp.add_child(child)
-
-# remove any leftover empty tip nodes    
-for n in tree.descendants():
-
-    nc = n
-    while (not nc.istip) and len(nc.children) == 0:
-        print "pruning an empty tip"
-        np = nc.parent
-        nc.prune()
-
-        if np:
-
-            # compress knuckle if there is one
-#            if len(np.children) == 1:
-#                child = np.children[0]
-#                pp = np.parent
-#                pp.remove_child(np)
-#                pp.add_child(child)
-
-            # prepare for next step back
-            nc = np
-
-        # if we hit the root of the tree, move on to next descendant
-        else:
-            break
-
-
-# write the pruned tree
 outfile = open(outfname,"w")
-outfile.write(newick3.tostring(tree) + ";")
+
+for line in treefile:
+
+    tree = newick3.parse(line)
+
+    # prune the bad tips
+    for tip in tree.leaves():
+
+        name_ok = False
+
+        if tip.label in badnames:
+            leftlabel = tip.label
+            print "removing " + leftlabel
+            tip.prune()
+
+    # remove any leftover empty tip nodes    
+    for n in tree.descendants():
+
+        nc = n
+        while (not nc.istip) and len(nc.children) == 0:
+            print "pruning an empty tip"
+            np = nc.parent
+            nc.prune()
+
+            if np:
+                # prepare for next step back
+                nc = np
+
+            # if we hit the root of the tree, move on to next descendant
+            else:
+                break
+
+    # write the pruned tree
+    outfile.write(newick3.to_string(tree) + ";\n")
+    outfile.flush()
+
 outfile.close()

@@ -75,11 +75,17 @@ if __name__ == "__main__":
             taxo_mrca_names = [n[0] for n in cur.fetchall()]
 
             if len(taxo_mrca_names) < 1:
+                print tax_name + " has no children, will be skipped"
                 continue
 
             print tax_name
 
             tree_mrca = phylo3.getMRCA(test_tree, taxo_mrca_names)
+
+            if tree_mrca == None:
+                print "    could not find any descendants in tree, will be skipped"
+                continue
+
             tree_mrca_names = [n.label for n in tree_mrca.descendants() if n.label != None]
             
             monophyly = False

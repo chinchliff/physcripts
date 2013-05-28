@@ -1,45 +1,37 @@
 #!/usr/bin/env python
 
-import dendropy
+import phylo3, newick3
 import sys
 
 desc = """
-Will root a set of trees using a line-delimited list of taxon names to be included in the outgroup.
-Requires dendropy to read and manipulate trees, thus accepts any input treefile readable by dendropy,
-though the format must be specified if other than newick.
+Will root a set of newick trees using a line-delimited list of taxon names to be included in the outgroup.
 """
 
 if __name__ == "__main__":
 
     if len(sys.argv) < 3:
         print desc
-        print "usage: roottrees <treesfile> <outgroupfile> <outfile> [<format=newick|nexus|etc>]"
+        print "usage: roottrees <treesfile> <outgroupsfile>"
         sys.exit(0)
 
-    infilepath = sys.argv[1]
-    outgroups_filepath = sys.argv[2]
-    outfilepath = sys.argv[3]
+    treesfname = sys.argv[1]
+    outgroupsfname = sys.argv[2]
 
-    ionputformat = "newick"
-    for arg in sys.argv[4:]:
-        argbits = arg.split("=")
-        if len(argbits) > 1:
-            if argbits[0] == "format":
-                inputformat = argbits[1]
+    treesfile = open(treesfname,"r")
 
-    trees = dendropy.TreeList.get_from_path(infilepath, inputformat)
-
-    outgroupsfile = open(outgroups_filepath,"r")
+    outgroupsfile = open(outgroupsfname,"r")
     outgroup_names = [line.strip() for line in outgroupsfile.readlines()]
 
-    rootedtrees = list()
-    for tree in trees:
+    rooted_trees = []
+    for line in treesfile:
 
-        outgroup = tree.mrca(taxon_labels=outgroup_names)
-        newbrlen = outgroup.edge_length / 2
-        tree.reroot_at_edge(outgroup.edge, length1=newbrlen, length2=newbrlen, update_splits=True)
+        tree = newick3.parse(line)
 
-        rootedtrees.append(tree)
+        outgroup = phylo3.getMRCA(tree, outgroup_names)
+        rooted_tree = phylo3.reroot(tree, outgroup)
 
-    rootedtrees_tlist = dendropy.TreeList(rootedtrees)
-    rootedtrees_tlist.write_to_path(outfilepath)
+        rooted_trees.append(rooted_tree)
+
+    outfile = open(treesfname.rsplit(".tre",1)[0]+".rooted.tre","w")
+    for tree in rooted_trees:
+        outfile.write(newick3.to_string(tree)+";\n")

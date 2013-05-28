@@ -106,9 +106,13 @@ class Node:
         while len(p.children) == 1:
             child = p.children[0]
             pp = p.parent
-            pp.remove_child(p)
-            pp.add_child(child)
-            p = pp
+
+            if pp != None: # check if we are at the root... not sure if this is correct
+                pp.remove_child(p)
+                pp.add_child(child)
+                p = pp
+            else:
+                break
             
         return p
 
