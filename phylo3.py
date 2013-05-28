@@ -102,17 +102,25 @@ class Node:
         if p:
             p.remove_child(self)
 
-        # if we have created a joint, collapse it
-        while len(p.children) == 1:
-            child = p.children[0]
-            pp = p.parent
+            # if we have created a joint, collapse it
+            while len(p.children) == 1:
+                only_child = p.children[0]
+                p.remove_child(only_child)
+                for grand_child in only_child.children:
+                    p.add_child(grand_child)
 
-            if pp != None: # check if we are at the root... not sure if this is correct
-                pp.remove_child(p)
-                pp.add_child(child)
-                p = pp
-            else:
-                break
+
+        # if we have created a joint, collapse it
+#        while len(p.children) == 1:
+#            child = p.children[0]
+#            pp = p.parent
+#
+#            if pp != None: # check if we are at the root... not sure if this is correct
+#                pp.remove_child(p)
+#                pp.add_child(child)
+#                p = pp
+#            else:
+#                break
             
         return p
 
