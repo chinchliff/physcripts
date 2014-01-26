@@ -100,14 +100,26 @@ class Node:
     def prune(self):
         p = self.parent
         if p:
+            
+            print "removing " + self.label #+ str [" + ", ".join([c.label for c in self.descendants()]) + "]"
             p.remove_child(self)
+            
+            print "remaining siblings: "
+            for x in p.children:
+                print str(x) + ": [" + ", ".join([c.label for c in x.iternodes()]) + "]"
+
+            print "parent parent " + str(p.parent)
 
             # if we have created a joint, collapse it
-            while len(p.children) == 1:
-                only_child = p.children[0]
-                p.remove_child(only_child)
-                for grand_child in only_child.children:
-                    p.add_child(grand_child)
+#            while len(p.children) == 1:
+            gc = p.children[0]
+            pp = p.parent
+#                print "parent parent " + str(pp)
+            pp.remove_child(p)
+            pp.add_child(gc)
+#                p.remove_child(only_child)
+#                for grand_child in only_child.children:
+#                    p.add_child(grand_child)
 
 
         # if we have created a joint, collapse it
@@ -257,7 +269,7 @@ def node2size(node, d=None):
     d[node] = size
     return d
 
-def reroot(oldroot, newroot):
+def reroot(oldroot, newroot): # needs some work
     oldroot.isroot = False
     newroot.isroot = True
     v = []
