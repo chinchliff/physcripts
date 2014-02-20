@@ -32,7 +32,9 @@ class Node:
         assert child not in self.children
         self.children.append(child)
         child.parent = self
-        self.nchildren += 1
+#        self.nchildren += 1
+        self.nchildren = len(self.children)
+        self.istip = False
 
     def remove_child(self, child):
         assert child in self.children
