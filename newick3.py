@@ -28,17 +28,17 @@ class Tokenizer(shlex):
                 pass
         return comment[:-1] 
 
-def parse(input, ttable=None):
+def parse(indata, ttable=None):
     """
     Parse a Newick-formatted tree description
     input is any file-like object that can be coerced into shlex,
     or a string (converted to StringIO)
     """
-    if type(input) is str:
-        input = StringIO.StringIO(input)
+    if type(indata) is str:
+        indata = StringIO.StringIO(indata)
     
-    start_pos = input.tell()
-    tokens = Tokenizer(input)
+    start_pos = indata.tell()
+    tokens = Tokenizer(indata)
 
     node = None; root = None
     lp=0; rp=0; rooted=1
@@ -108,7 +108,7 @@ def parse(input, ttable=None):
         #print token, node
         
 
-    input.seek(start_pos)
+    indata.seek(start_pos)
 
 ##     if rooted:
 ##         root = Fnode(isroot=1)
@@ -123,15 +123,19 @@ def traverse(node):
     if node.istip: return node.back
     else: return node.next.back
         
-def to_string(node, length_fmt=":%s"):
-    if not node.istip:
-        node_str = "(%s)%s" % \
-                   (",".join([ to_string(child, length_fmt) \
-                               for child in node.children ]),
-                    node.label or ""
-                    )
-    else:
+def to_string(node, length_fmt=":%s", use_node_labels=True):
+
+    if node.istip:
         node_str = "%s" % node.label
+
+    else:
+        node_label = ""
+        if use_node_labels and node.label != None:
+            node_label = node.label
+
+        node_str = "(%s)%s" % \
+                   (",".join([ to_string(child, length_fmt, use_node_labels) \
+                               for child in node.children ]), node_label)
 
     if node.length is not None and node.length != "":
         length_str = length_fmt % node.length
