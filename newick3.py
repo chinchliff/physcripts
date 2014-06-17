@@ -123,7 +123,7 @@ def traverse(node):
     if node.istip: return node.back
     else: return node.next.back
         
-def to_string(node, length_fmt=":%s", use_node_labels=True):
+def to_string(node, length_fmt=":%s", use_node_labels=True, use_branch_lengths=True):
 
     if node.istip:
         node_str = "%s" % node.label
@@ -137,15 +137,20 @@ def to_string(node, length_fmt=":%s", use_node_labels=True):
                    (",".join([ to_string(child, length_fmt, use_node_labels) \
                                for child in node.children ]), node_label)
 
+#    print("TEST1" + str(node.length))
+
     if node.length is not None and node.length != "":
         length_str = length_fmt % node.length
         #length_str = ':%f' % node.length
         #length_str = str(length_str)
     else:
         length_str = ""
+    
+    if use_branch_lengths:
+        node_str = "%s%s" % (node_str, length_str)
 
-    s = "%s%s" % (node_str, length_str)
-    return s
+#    print("TEST2" + str(node.length) + " " + length_str)
+    return node_str
 
 tostring = to_string
         

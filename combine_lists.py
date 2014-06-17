@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, sys
+import os, sys, csv
 
 if len(sys.argv) < 3:
 	print("usage: combine_lists.py <input1> <input2> <keycolumn>")
@@ -14,12 +14,12 @@ list1_key_column_index = -1
 on_first_line = True
 with open(sys.argv[1], "r") as list1_infile:
 
-	for line in list1_infile.readlines():
-				
-		parts = [s.strip() for s in line.split(",")]
+	list1_reader = csv.reader(list1_infile,delimiter=',',quotechar='"')
+	for row in list1_reader:
 		
-		if on_first_line:
-			on_first_line = False
+		parts = [s.strip() for s in row]
+		
+		if list1_reader.line_num == 1:
 			for i, val in enumerate(parts):
 				if val == key_column_label:
 					list1_key_column_index = i
@@ -46,12 +46,12 @@ list2_key_column_index = -1
 on_first_line = True
 with open(sys.argv[2], "r") as list2_infile:
 
-	for line in list2_infile.readlines():
+	list2_reader = csv.reader(list2_infile,delimiter=',',quotechar='"')
+	for row in list2_reader:
 				
-		parts = [s.strip() for s in line.split(",")]
+		parts = [s.strip() for s in row]
 		
-		if on_first_line:
-			on_first_line = False
+		if list2_reader.line_num == 1:
 			for i, val in enumerate(parts):
 				if val == key_column_label:
 					list2_key_column_index = i

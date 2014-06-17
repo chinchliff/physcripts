@@ -1,3 +1,6 @@
+import newick3
+from copy import deepcopy as copy
+
 #import sets
 PREORDER = -99999; POSTORDER = 123456
 BRANCHLENGTH = 0; INTERNODES = 1
@@ -295,6 +298,83 @@ class Node:
 #           else:
 #                break
         return path
+        
+def get_tree_rooted_on(target_node):
+	# we will reroot on branch subtending the target
+
+	if target_node.parent is None:
+		# the target is already the root. rerooting here would just add a knuckle
+		return target_node
+
+	if target_node.parent.parent is None and len(target_node.parent.children) < 3:
+		# the target node is already a child of the root AND the root has only two
+		# children. rerooting will produce an identical topology
+		return target_node
+
+	# get the branch length of the branch where the root will go
+	# we will divide it evenly across both children of the new root
+	new_bl = target_node.length / 2
+
+	# get the original parent of the target node before it is lost
+	old_parent = target_node.parent
+	old_parent.remove_child(target_node)
+
+	# this branch length will go on the next descendant branch when we
+	# reverse all the parent rels to the old root 
+	temp_bl = old_parent.length
+
+	# make a new root node, attach the target_node as an immediate descendant
+	new_root = Node()
+	new_root.add_child(target_node)
+	target_node.length = new_bl
+
+	# get the target's original grandparent, this will be the starting point for reversing
+	# the relationships of the target's ancestors to make them descendants of the new root
+	parent = old_parent.parent
+	
+	# reattach the former target's parent as a sibling of the target node
+	new_root.add_child(old_parent)
+	old_parent.length = new_bl
+
+	if parent is not None:
+		# if the tree had a polytomy at the root and we rerooted on one of its child branches,
+		# then we have basically just let the original root node become  a child of the new
+		# root containing all the other children of the original polytomy. in this case, the
+		# `parent` var will be None and the topology finished. If not, then we need to...
+
+		# traverse the target's ancestors, reversing their rels to make them descendants of new root
+		prev_child = old_parent
+		while parent != None:
+
+			# remember the grandparent
+			gp = parent.parent
+
+			# switch the direction of this relationship
+			parent.remove_child(prev_child)
+			prev_child.add_child(parent)
+	
+			next_bl = parent.length
+			parent.length = temp_bl
+			temp_bl = next_bl
+	
+			last_known_ancestor = prev_child # save this in case we hit the root node next
+			prev_child = parent
+			parent = gp
+	
+		# now the current previous_child variable should contain the old root node (node with no parent)
+		# remove all its children and attach them to the last ancestor
+		n = len(prev_child.children)
+		for root_child in prev_child.children:
+			last_known_ancestor.add_child(root_child)
+			prev_child.remove_child(root_child)
+		
+			# finally, get rid of the old root node
+			last_known_ancestor.remove_child(prev_child)
+	
+			root_child.length += prev_child.length / n
+	
+	new_root.isroot = True
+	return new_root
 
 def node2size(node, d=None):
     "map node and descendants to number of descendant tips"
@@ -328,7 +408,11 @@ def reroot(oldroot, newroot): # needs some work
         cp.length = node.length
     return newroot
 
+# DEPRECATED, use get_mrca()
 def getMRCA(tree, innames):
+	return get_mrca(tree, innames)
+
+def get_mrca(tree, innames):
 
     # find a name in the tree to start from
     i = 0
