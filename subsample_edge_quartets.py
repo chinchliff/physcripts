@@ -14,9 +14,10 @@ using the sequence data with sequence data from the original alignment, and we r
 for each replicate. The resulting topology sets are used to calculate the ICA score for the 
 bipartition."""
 
-#NREPS = 500
-#NPROCS = 22
-#VERBOSE = False
+DEFAULT_RAXML = "raxmlHPC-AVX"
+SECONDS_PER_MINUTE = 60
+MINUTES_PER_HOUR = 60
+SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
 
 def process_replicate(replicate):
 
@@ -99,11 +100,6 @@ def process_replicate(replicate):
 
 if __name__ == "__main__":
     
-    DEFAULT_RAXML = "raxmlHPC-AVX"
-    SECONDS_PER_MINUTE = 60
-    MINUTES_PER_HOUR = 60
-    SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
-
     parser = argparse.ArgumentParser(description=description)
 
     parser.add_argument("-t", "--tree", type=file, nargs=1, required=True, help="The input tree. Must be rooted and fully bifurcating.")
@@ -125,16 +121,6 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", action="store_true", help="Provide more verbose output if specified.")
     
     parser.add_argument("-X", "--raxml-executable", nargs=1, help="The name (or absolute path) of the NON-PTHREADS raxml executable to be used for inferring quartet topology replicates. If this argument is not supplied, then the name '"+ DEFAULT_RAXML + "' will be used. IMPORTANT NOTE: using a raxml version with quiet alignment validation is likely to drastically improve runtimes. One such version is available at http://github.com/chinchliff/standard-RAxML")
-
-#    if len(sys.argv) < 6:
-#        print("subsample_edge_quartets.py <alignment_phy_format> <partitions_raxml_format> <rooted_tree> <output_dir> <tempfiles_dir> [<start_node_number>]")
-#        sys.exit()
-    
-#    aln_file_path = os.path.abspath(sys.argv[1])
-#    parts_file_path = os.path.abspath(sys.argv[2])
-#    tree_file_path = os.path.abspath(sys.argv[3])
-#    results_dir = os.path.abspath(sys.argv[4]).rstrip("/")+"/"
-#    temp_wd = os.path.abspath(sys.argv[5])
 
     args = parser.parse_args()
     
@@ -163,21 +149,11 @@ if __name__ == "__main__":
     nprocs = args.number_of_threads[0]
     nreps = args.number_of_reps[0]
 
-    # set calc_start_k > 1 to restart from a known position without recalculating/overwriting previous results.
-    # ONLY makes sense if the treefile (i.e. the node order) has not changed
-    calc_start_k = args.start_node_number[0] if args.start_node_number != None else 1
-#    calc_start_k = 1
-#    if len(sys.argv) > 6:
-#        calc_start_k = int(sys.argv[6])
-
-
     # shared object access for multithreading
     manager = Manager()
     lock = manager.Lock()
 
     # read the alignment into a dict, assumes phylip format with seqs unbroken on lines
-#    print "reading alignment from " + aln_file_path
-#    with open(aln_file_path,"r") as alnfile:
     aln = {}
     alnfile = args.alignment[0]
     print "reading alignment from " + alnfile.name
@@ -193,8 +169,6 @@ if __name__ == "__main__":
     args.alignment[0].close() 
 
     # get the tree to subsample
-#    print "reading tree from " + tree_file_path
-#    with open(tree_file_path,"r") as treefile:
     tree = None
     treefile = args.tree[0]
     print "reading tree from " + treefile.name
@@ -213,12 +187,6 @@ if __name__ == "__main__":
 
     if args.verbose:
         print("tree has " + str(len(leaves)) + " leaves")
-
-#    try:
-#        os.mkdir("results")
-#        os.mkdir("results/topology_sets")
-#    except OSError:
-#        pass
 
     os.chdir(temp_wd)
 
@@ -263,10 +231,13 @@ if __name__ == "__main__":
                 else: # less than 60 seconds
                     mean_time_units = "seconds"
                     mean_time_scalar = 1
-                    
-                est_remaining_time_secs = mean_time_secs * (len(leaves) - k - 1) # the -1 is for the duplicate bipart at the root 
+                 
+                # adjust for the duplicate bipart at the root (until we hit it, then stop adjusting)
+                adj = -1 if root_bipart_label == None else 0
+                est_remaining_time_secs = mean_time_secs * (len(leaves) - k + adj)
+                 
                 if est_remaining_time_secs > SECONDS_PER_MINUTE:
-                    if est_remaining_time_secs > SECONDS_PER_HOUR: # more than one hour (yikes!) 
+                    if est_remaining_time_secs > SECONDS_PER_HOUR:
                         est_remaining_time_units = "hours"
                         est_remaining_time_scalar = SECONDS_PER_HOUR
                     else: # between 1 and 60 minutes
@@ -320,7 +291,7 @@ if __name__ == "__main__":
                         skip_tip_child_of_root = True
                         tip_child_label = sib.label
                     else:
-                        sys.exit("Found a node in the tree with either 1 or more than 2 children. Disallowed! Quitting.")
+                        sys.exit("Found a node in the tree with either 1 or more than 2 children. Knuckles and multifurcations are not allowed. Quitting.")
 
                     # remember that we've already done the root, so we can skip it when we hit the other side
                     root_bipart_label = node.label
