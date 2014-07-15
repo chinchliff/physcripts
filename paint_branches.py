@@ -76,8 +76,6 @@ def write_tree(outfile_name, tree):
 
 if __name__ == "__main__":
 
-    global BLACK
-
     parser = argparse.ArgumentParser(description="Annotate a labeled tree with figtree-format branch color labels by binning node values into ranges associated with colors.")
 
     parser.add_argument("-t", "--tree", type=file, nargs=1, required=True, help="A newick tree file with labeled internal nodes. If a node-values file is supplied, then the node labels in the tree will be used to match to the rows of the node-values file. Otherwise, the node labels themselves will be interpreted as the values to be used for tree painting.")
@@ -91,6 +89,8 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--tip-values", type=file, nargs=1, help="A list containing 2 columns of comma-separated values, where the first item on each line is the tip label and the second is the value to be assigned to the the tip. This may be used to assign values to tip nodes in a tree whose internal nodes are assigned values with node labels.")
 
     parser.add_argument("-o", "--output-dir", nargs=1, help="A location to which painted trees should be saved. If not specified they will be saved to the current working directory.")
+    
+    parser.add_argument("-n", "--output-prefix", nargs=1, help="A prefix to be attached to output files. If not specified, no prefix will be used (i.e. preexisting output file will be overwritten).")
 
     args = parser.parse_args()
     
@@ -98,6 +98,8 @@ if __name__ == "__main__":
     if args.output_dir != None:
         target_dir = os.path.abspath(args.output_dir)
     print("will save output to: " + target_dir)
+    
+    output_prefix = args.output_prefix[0] if args.output_prefix is not None else ""
 
     # import the color bins. see the example color bins file. INPUT MUST BE SORTED.
     color_bins = []
@@ -167,9 +169,11 @@ if __name__ == "__main__":
                 else:
                     node.color_string = BLACK
         
-            print("writing painted tree for data column '" + column_label + "'")            
-            outfile_name = target_dir+"/tree_painted_by_" + column_label + ".tre"
-            write_tree(outfile_name, tree)
+            outfile_name = "tree_painted_by_" + column_label + ".tre"
+            outfile_name = output_prefix + "_" + outfile_name if len(output_prefix) > 0 else outfile_name
+            outfile_path = target_dir+"/"+outfile_name
+            print("writing painted tree for data column '" + column_label + "' to: " + outfile_path)
+            write_tree(outfile_path, tree)
                 
     else: # use values from the internal node labels themselves
         
@@ -197,6 +201,8 @@ if __name__ == "__main__":
             else:
                 sys.stderr.write("could not assign the value '" + node.label + "' to a bin")
 
-        print("writing painted tree based on node labels")
-        outfile_name = target_dir+"/tree_painted_by_node_labels.tre"
+        outfile_name = "tree_painted_by_node_labels.tre"
+        outfile_name = output_prefix + "_" + outfile_name if len(output_prefix) > 0 else outfile_name
+        outfile_path = target_dir+"/"+outfile_name
+        print("writing painted tree based on node labels to: " + outfile_path)
         write_tree(outfile_name, tree)
