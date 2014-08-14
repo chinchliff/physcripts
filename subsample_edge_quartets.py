@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import argparse, newick3, os, phylo3, random, subprocess, sys, time
+import argparse, newick3, os, phylo3, random, shutil, subprocess, sys, time
 from multiprocessing import Lock, Manager, Pool, Queue
 
 description = """Consider each node in the rooted tree to identify a bipartition, which is represented in
@@ -54,12 +54,13 @@ def process_replicate(replicate):
             outfile.write(subtree_name + " " + seq + "\n")
     
     # test alignment readability by raxml, also filters entirely missing columns
-    raxml_args = [raxml_path, \
-        "-s", temp_aln_fname, \
-        "-n", temp_aln_test_read_label, \
-        "-m", "GTRCAT", \
+    raxml_args = [raxml_path, 
+        "-s", temp_aln_fname, 
+        "-n", temp_aln_test_read_label, 
+        "-m", "GTRCAT", 
         "-f", "c",
-        "-$", # quiet alignment validation mode, a ceh hack to raxml (submitted pull request, we will see...)
+        "-$",  # silent alignment validation mode, currently on chinchliff branch
+#        "--silent", # silent alignment validation mode, waiting for standard-raxml to work
         ">", "/dev/null"]
     if using_partitions:
         raxml_args.append("-q")
@@ -115,12 +116,14 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--results-dir", type=os.path.expanduser, nargs=1, help="A directory to which output files will be saved. If not supplied, the current working directory will be used.")
 
     parser.add_argument("-e", "--temp-dir", type=os.path.expanduser, nargs=1, help="A directory to which temporary files will be saved. If not supplied, a \"temp\" directory will be created in the current working directory.")
+    
+    parser.add_argument("-g", "--topology-sets-dir", type=os.path.expanduser, nargs=1, help="A directory to which topology sets will be saved. If not supplied, a directory will be created inside in the temp dir")
 
     parser.add_argument("-s", "--start-node-number", type=int, nargs=1, help="An integer denoting the node to which to start from. Nodes will be read from topologically identical (including isomorphism!) input trees in deterministic order, so this argument may be used to restart at an intermediate position (in case the previous run was canceled before completion, for example).")
     
     parser.add_argument("-v", "--verbose", action="store_true", help="Provide more verbose output if specified.")
     
-    parser.add_argument("-X", "--raxml-executable", nargs=1, help="The name (or absolute path) of the NON-PTHREADS raxml executable to be used for inferring quartet topology replicates. If this argument is not supplied, then the name '"+ DEFAULT_RAXML + "' will be used. IMPORTANT NOTE: using a raxml version with quiet alignment validation is likely to drastically improve runtimes. One such version is available at http://github.com/chinchliff/standard-RAxML")
+    parser.add_argument("-X", "--raxml-executable", nargs=1, help="The name (or absolute path) of the NON-PTHREADS raxml executable to be used for inferring quartet topology replicates. If this argument is not supplied, then the name '"+ DEFAULT_RAXML + "' will be used. IMPORTANT NOTE: using a raxml version with silent alignment validation (i.e. which supports the `--silent` argument) is likely to drastically improve runtimes. The latest version from http://github.com/stamatak/standard-RAxML has this feature.")
 
     args = parser.parse_args()
     
@@ -135,9 +138,12 @@ if __name__ == "__main__":
     if not os.path.exists(temp_wd):
         os.mkdir(temp_wd)
 
-    topology_dir = results_dir + "/topology_sets/"
-    if not os.path.exists(topology_dir):
-        os.mkdir(topology_dir)
+    topology_dir = args.topology_sets_dir[0] if args.topology_sets_dir != None else temp_wd + "/topology_sets"
+    if os.path.exists(topology_dir):
+        shutil.rmtree(topology_dir)
+    os.mkdir(topology_dir)
+
+    calc_start_k = args.start_node_number if args.start_node_number != None else 1
 
     using_partitions = False
     if args.partitions is not None:
@@ -316,7 +322,8 @@ if __name__ == "__main__":
 
         # if we already processed the bipart at the root and this is the other side of that
         if is_other_side_of_root:
-            print("\nskipping second instance of root-adjacent bipartition (it was already processed at node " + root_bipart_label + ").")
+            print("\nskipping second instance of root-adjacent bipartition (it was already processed at node " + \
+                    root_bipart_label + ").")
             node.label = root_bipart_label
             continue
 
@@ -378,7 +385,7 @@ if __name__ == "__main__":
 
         # now proces the results. first open a file to hold topologies
         count_bipart_observed = 0
-        topo_file_name = topology_dir + node.label + ".obs_topologies.txt"
+        topo_file_name = topology_dir + "/" + node.label + ".obs_topologies.txt"
         with open(topo_file_name, "w") as topo_file:
 
             while not results_queue.empty():
@@ -424,9 +431,10 @@ if __name__ == "__main__":
                     if ("L1" in names and "L2" in names) or ("R1" in names and "R2" in names):
                         ica = parts[-1] # ica score should be last item on line
                         break
+    
+        freq = str(count_bipart_observed / float(nreps))
 
         # write the scores to the file
-        freq = str(count_bipart_observed / float(nreps))
         with open(score_result_file_path, "a") as results_file:
             results_file.write(",".join([node.label, freq, ica]) + "\n")
 

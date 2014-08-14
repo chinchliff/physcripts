@@ -50,4 +50,4 @@ if __name__ == "__main__":
             new_node.length = random.random() * max_brlen
         nodes.append(new_node)
     
-    print(newick3.to_string(nodes[0], use_branch_lengths=make_brlens)+";\n")
+    print(newick3.to_string(nodes[0], use_branch_lengths=make_brlens)+";")
