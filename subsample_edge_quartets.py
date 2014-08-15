@@ -356,7 +356,7 @@ if __name__ == "__main__":
             rep["seqs"] = {}
             for subtree_name, leaf_names in leafsets.iteritems():
                 while subtree_name not in rep["seqs"]: 
-                    leafname = random.sample(leaf_names, 1) #[0].label
+                    leafname = random.sample(leaf_names, 1)[0] #[0].label
                     if leafname in aln:
                         rep["seqs"][subtree_name] = aln[leafname]
                         if args.verbose:
