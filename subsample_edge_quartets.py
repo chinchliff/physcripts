@@ -265,14 +265,17 @@ if __name__ == "__main__":
 #            print(" child " + str(i) + " [" + ", ".join([l.label for l in child.leaves()[0:10]]) + "]" + (" + " + (str(len(child.leaves())-10) + " more") if (len(child.leaves())-10) > 0 else ""))
 
         # require a bifurcating tree
-        assert(len(node.children) == 2)
+#        assert(len(node.children) == 2)
+        if len(node.children) != 2:
+            print("Node %s does not have exactly 2 children. It will be skipped." % k)
+            continue 
 
         # get leaf sets for the four connected subtrees
         leafsets = {}
 
         # two daughter subtrees
-        leafsets["R1"] = set(node if node.istip else node.children[0].leaves())
-        leafsets["R2"] = set(node if node.istip else node.children[1].leaves())
+        leafsets["R1"] = set(node.children[0].label if node.istip else [l.label for l in node.children[0].leaves()])
+        leafsets["R2"] = set(node.children[1].label if node.istip else [l.label for l in node.children[1].leaves()])
 
         # sibling/parent subtrees
         is_other_side_of_root = False # used when we hit the root for the second time
@@ -291,13 +294,14 @@ if __name__ == "__main__":
 
                     # get the subtrees opposite the root
                     if len(sib.children) == 2:
-                        leafsets["L1"] = set(sib if sib.istip else sib.children[0].leaves())
-                        leafsets["L2"] = set(sib if sib.istip else sib.children[1].leaves())
+                        leafsets["L1"] = set(sib.children[0].label if sib.children[0].istip else [l.label for l in sib.children[0].leaves()])
+                        leafsets["L2"] = set(sib.children[1].label if sib.children[1].istip else [l.label for l in sib.children[1].leaves()])
                     elif len(sib.children) == 0:
                         skip_tip_child_of_root = True
                         tip_child_label = sib.label
                     else:
-                        sys.exit("Found a node in the tree with either 1 or more than 2 children. Knuckles and multifurcations are not allowed. Quitting.")
+                        print("Node %s does not have exactly 2 children. It will be skipped." % k)
+                        continue
 
                     # remember that we've already done the root, so we can skip it when we hit the other side
                     root_bipart_label = node.label
@@ -306,15 +310,15 @@ if __name__ == "__main__":
                 else:
 
                     # sibling subtree
-                    leafsets["L1"] = set(sib.leaves())
+                    leafsets["L1"] = set([l.label for l in sib.leaves()])
 
                     # the rest of the tree
                     leafsets["L2"] = set()
-                    for leaf in leaves:
-                        if leaf not in leafsets["R1"] and \
-                            leaf not in leafsets["R2"] and \
-                            leaf not in leafsets["L1"]:
-                                leafsets["L2"].add(leaf)
+                    for label in [l.label for l in leaves]:
+                        if label not in leafsets["R1"] and \
+                            label not in leafsets["R2"] and \
+                            label not in leafsets["L1"]:
+                                leafsets["L2"].add(label)
         
         if skip_tip_child_of_root:
             print("not calculating ica for tip child '" + tip_child_label + "' of the root (ica is 1.0, as for all tips).")
@@ -352,7 +356,7 @@ if __name__ == "__main__":
             rep["seqs"] = {}
             for subtree_name, leaf_names in leafsets.iteritems():
                 while subtree_name not in rep["seqs"]: 
-                    leafname = random.sample(leaf_names, 1)[0].label
+                    leafname = random.sample(leaf_names, 1) #[0].label
                     if leafname in aln:
                         rep["seqs"][subtree_name] = aln[leafname]
                         if args.verbose:
