@@ -274,8 +274,8 @@ if __name__ == "__main__":
         leafsets = {}
 
         # two daughter subtrees
-        leafsets["R1"] = set(node.children[0].label if node.istip else [l.label for l in node.children[0].leaves()])
-        leafsets["R2"] = set(node.children[1].label if node.istip else [l.label for l in node.children[1].leaves()])
+        leafsets["R1"] = set([node.children[0].label,] if node.istip else [l.label for l in node.children[0].leaves()])
+        leafsets["R2"] = set([node.children[1].label,] if node.istip else [l.label for l in node.children[1].leaves()])
 
         # sibling/parent subtrees
         is_other_side_of_root = False # used when we hit the root for the second time
@@ -294,8 +294,8 @@ if __name__ == "__main__":
 
                     # get the subtrees opposite the root
                     if len(sib.children) == 2:
-                        leafsets["L1"] = set(sib.children[0].label if sib.children[0].istip else [l.label for l in sib.children[0].leaves()])
-                        leafsets["L2"] = set(sib.children[1].label if sib.children[1].istip else [l.label for l in sib.children[1].leaves()])
+                        leafsets["L1"] = set([sib.children[0].label,] if sib.children[0].istip else [l.label for l in sib.children[0].leaves()])
+                        leafsets["L2"] = set([sib.children[1].label,] if sib.children[1].istip else [l.label for l in sib.children[1].leaves()])
                     elif len(sib.children) == 0:
                         skip_tip_child_of_root = True
                         tip_child_label = sib.label
