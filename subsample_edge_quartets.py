@@ -121,7 +121,7 @@ if __name__ == "__main__":
 
     parser.add_argument("-s", "--start-node-number", type=int, nargs=1, help="An integer denoting the node to which to start from. Nodes will be read from topologically identical (and isomorphic!) input trees in deterministic order, so this argument may be used to restart at an intermediate position (in case the previous run was canceled before completion, for example).")
     
-    parser.add_argument("-p", "--stop-node-number", type=int, nargs=1, help="An integer denoting the node at which to stop. Nodes will be read from topologically identical (and isomorphic!) input trees in deterministic order, so this argument may be used to limit the length of a given run in case only a certain part of the tree is of interest.") 
+    parser.add_argument("-p", "--stop-node-number", type=int, nargs=1, help="An integer denoting the node at which to stop. Processing will include nodes with indices <= the stop node number. This argument may be used to limit the length of a given run in case only a certain part of the tree is of interest. Nodes will be read from topologically identical (and isomorphic!) input trees in deterministic order.") 
     
     parser.add_argument("-v", "--verbose", action="store_true", help="Provide more verbose output if specified.")
     
@@ -268,7 +268,6 @@ if __name__ == "__main__":
             else:
                 time_string = ""
             print("\nprocessing node " + str(k) + time_string)
-            k += 1
 
         # debug code
 #        for i, child in enumerate(node.children):
@@ -329,6 +328,9 @@ if __name__ == "__main__":
                             label not in leafsets["R2"] and \
                             label not in leafsets["L1"]:
                                 leafsets["L2"].add(label)
+
+        # no more user feedback, now we can increment k
+        k += 1
         
         if skip_tip_child_of_root:
             print("not calculating ica for tip child '" + tip_child_label + "' of the root (ica is 1.0, as for all tips).")
