@@ -336,6 +336,8 @@ if __name__ == "__main__":
         for leafset in leafsets.itervalues():
             assert len(leafset) > 0
             t.update(leafset)
+        print("t: " + ",".join(sorted(list(t))))
+        print("leaves: " + ",".join(sorted([l.label for l in leaves])))
         assert len(t) == len(leaves)
         del(t)
 
