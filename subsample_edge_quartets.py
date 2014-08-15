@@ -145,14 +145,14 @@ if __name__ == "__main__":
         shutil.rmtree(topology_dir)
     os.mkdir(topology_dir)
 
-    calc_start_k = args.start_node_number if args.start_node_number != None else 1
+    calc_start_k = args.start_node_number[0] if args.start_node_number != None else 1
 
     using_partitions = False
     if args.partitions is not None:
         using_partitions = True
         parts_file = args.partitions[0]
     
-    raxml_path = args.raxml_executable if args.raxml_executable is not None else DEFAULT_RAXML
+    raxml_path = args.raxml_executable[0] if args.raxml_executable is not None else DEFAULT_RAXML
     
     nprocs = args.number_of_threads[0]
     nreps = args.number_of_reps[0]
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     args.tree[0].close()
     leaves = tree.leaves()
 
-    calc_stop_k = args.stop_node_number if args.stop_node_number != None else len(tree.leaves())+100
+    calc_stop_k = args.stop_node_number[0] if args.stop_node_number != None else len(tree.leaves())+100
     if calc_stop_k < calc_start_k:
         sys.exit("The start node number is higher than the stop node number, designating no nodes for processing.")
 
