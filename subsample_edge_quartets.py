@@ -119,7 +119,9 @@ if __name__ == "__main__":
     
     parser.add_argument("-g", "--topology-sets-dir", type=os.path.expanduser, nargs=1, help="A directory to which topology sets will be saved. If not supplied, a directory will be created inside in the temp dir")
 
-    parser.add_argument("-s", "--start-node-number", type=int, nargs=1, help="An integer denoting the node to which to start from. Nodes will be read from topologically identical (including isomorphism!) input trees in deterministic order, so this argument may be used to restart at an intermediate position (in case the previous run was canceled before completion, for example).")
+    parser.add_argument("-s", "--start-node-number", type=int, nargs=1, help="An integer denoting the node to which to start from. Nodes will be read from topologically identical (and isomorphic!) input trees in deterministic order, so this argument may be used to restart at an intermediate position (in case the previous run was canceled before completion, for example).")
+    
+    parser.add_argument("-p", "--stop-node-number", type=int, nargs=1, help="An integer denoting the node at which to stop. Nodes will be read from topologically identical (and isomorphic!) input trees in deterministic order, so this argument may be used to limit the length of a given run in case only a certain part of the tree is of interest.") 
     
     parser.add_argument("-v", "--verbose", action="store_true", help="Provide more verbose output if specified.")
     
@@ -191,6 +193,10 @@ if __name__ == "__main__":
     args.tree[0].close()
     leaves = tree.leaves()
 
+    calc_stop_k = args.stop_node_number if args.stop_node_number != None else len(tree.leaves())+100
+    if calc_stop_k < calc_start_k:
+        sys.exit("The start node number is higher than the stop node number, designating no nodes for processing.")
+
     if args.verbose:
         print("tree has " + str(len(leaves)) + " leaves")
 
@@ -208,6 +214,10 @@ if __name__ == "__main__":
     starttime = time.time()
     root_bipart_label = None
     for node in tree.iternodes():
+
+        if k > calc_stop_k:
+            print("Processed all nodes up to the stop node. Quitting now")
+            exit()
 
         # skip tips and root
         if node.istip or node.parent == None:
