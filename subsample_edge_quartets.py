@@ -391,7 +391,7 @@ if __name__ == "__main__":
 
         # copy in original partitions file, should not change throughout run
         if using_partitions:
-            subprocess.call("cp " + parts_file.name + " temp_parts", shell=True)
+            subprocess.call("cp " + parts_file_path + " temp_parts", shell=True)
 
         # run the raxml calls in parallel
         # now designate multiprocessing resource pool.
