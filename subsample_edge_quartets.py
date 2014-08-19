@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
     parser.add_argument("-T", "--number-of-threads", type=int, nargs=1, required=True, help="The number of parallel threads to be used for quartet topology searches.")
     
-    parser.add_argument("-q", "--partitions", type=file, nargs=1, help="Partitions file in RAxML format. If omitted then the entire alignment will be treated as one partition for all quartet replicate topology searches.")
+    parser.add_argument("-q", "--partitions", type=os.path.expanduser, nargs=1, help="Partitions file in RAxML format. If omitted then the entire alignment will be treated as one partition for all quartet replicate topology searches.")
 
     parser.add_argument("-o", "--results-dir", type=os.path.expanduser, nargs=1, help="A directory to which output files will be saved. If not supplied, the current working directory will be used.")
 
@@ -139,12 +139,14 @@ if __name__ == "__main__":
     if not os.path.exists(topology_dir):
         os.mkdir(topology_dir)
 
+    calc_start_k = args.start_node_number[0] if args.start_node_number is not None else 1
+
     using_partitions = False
     if args.partitions is not None:
         using_partitions = True
-        parts_file = args.partitions[0]
+        parts_file_path = os.path.abspath(args.partitions[0])
     
-    raxml_path = args.raxml_executable if args.raxml_executable is not None else DEFAULT_RAXML
+    raxml_path = args.raxml_executable[0] if args.raxml_executable is not None else DEFAULT_RAXML
     
     nprocs = args.number_of_threads[0]
     nreps = args.number_of_reps[0]
@@ -373,7 +375,10 @@ if __name__ == "__main__":
         pool.close()
         pool.join()
         del(pool)
-        ### map(process_replicate, replicates) # use for testing
+        
+        # use for testing to allow isolation/identification of errors within mapped functions
+#        map(process_replicate, replicates) # use for testing
+
         print("")
 
         # now proces the results. first open a file to hold topologies

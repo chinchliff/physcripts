@@ -165,7 +165,7 @@ if __name__ == "__main__":
                     if this_bin != None:
                         node.color_string = this_bin["color"]
                     else:
-                        raise "could not assign the value '" + str(data[node.label][column_label]) + "' to a bin"
+                        sys.exit("could not assign the value '" + str(data[node.label][column_label]) + "' to a bin")
                 else:
                     node.color_string = BLACK
         
