@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import argparse, newick3, os, phylo3, random, subprocess, sys, time
+import argparse, newick3, os, phylo3, random, shutil, subprocess, sys, time
 from multiprocessing import Lock, Manager, Pool, Queue
 
 description = """Consider each node in the rooted tree to identify a bipartition, which is represented in
@@ -54,16 +54,18 @@ def process_replicate(replicate):
             outfile.write(subtree_name + " " + seq + "\n")
     
     # test alignment readability by raxml, also filters entirely missing columns
-    raxml_args = [raxml_path, \
-        "-s", temp_aln_fname, \
-        "-n", temp_aln_test_read_label, \
-        "-m", "GTRCAT", \
+    raxml_args = [raxml_path, 
+        "-s", temp_aln_fname, 
+        "-n", temp_aln_test_read_label, 
+        "-m", "GTRCAT", 
         "-f", "c",
-        "-$", # quiet alignment validation mode, a ceh hack to raxml (submitted pull request, we will see...)
-        ">", "/dev/null"]
+        "-$", ] # silent alignment validation mode, currently on chinchliff branch
+#        "--silent", # silent alignment validation mode, waiting for standard-raxml to work
+
     if using_partitions:
-        raxml_args.append("-q")
-        raxml_args.append(temp_part_fname)
+        raxml_args += ["-q", temp_part_fname]
+
+    raxml_args += [">", "/dev/null"]
 
     subprocess.call(" ".join(raxml_args), shell=True)
     
@@ -79,11 +81,12 @@ def process_replicate(replicate):
         "-n", temp_ml_search_label, \
         "-m", "GTRCAT", \
         "-p", "123", \
-        "-F",
-        ">", "/dev/null"]
+        "-F", ]
+
     if using_partitions:
-        raxml_args.append("-q")
-        raxml_args.append(temp_part_fname)
+        raxml_args += ["-q", temp_part_fname]
+    
+    raxml_args += [">", "/dev/null"]
 
     result["raxml_args"] = " ".join(raxml_args)
     subprocess.call(result["raxml_args"], shell=True)
@@ -115,12 +118,16 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--results-dir", type=os.path.expanduser, nargs=1, help="A directory to which output files will be saved. If not supplied, the current working directory will be used.")
 
     parser.add_argument("-e", "--temp-dir", type=os.path.expanduser, nargs=1, help="A directory to which temporary files will be saved. If not supplied, a \"temp\" directory will be created in the current working directory.")
+    
+    parser.add_argument("-g", "--topology-sets-dir", type=os.path.expanduser, nargs=1, help="A directory to which topology sets will be saved. If not supplied, a directory will be created inside in the temp dir")
 
-    parser.add_argument("-s", "--start-node-number", type=int, nargs=1, help="An integer denoting the node to which to start from. Nodes will be read from topologically identical (including isomorphism!) input trees in deterministic order, so this argument may be used to restart at an intermediate position (in case the previous run was canceled before completion, for example).")
+    parser.add_argument("-s", "--start-node-number", type=int, nargs=1, help="An integer denoting the node to which to start from. Nodes will be read from topologically identical (and isomorphic!) input trees in deterministic order, so this argument may be used to restart at an intermediate position (in case the previous run was canceled before completion, for example).")
+    
+    parser.add_argument("-p", "--stop-node-number", type=int, nargs=1, help="An integer denoting the node at which to stop. Processing will include nodes with indices <= the stop node number. This argument may be used to limit the length of a given run in case only a certain part of the tree is of interest. Nodes will be read from topologically identical (and isomorphic!) input trees in deterministic order.") 
     
     parser.add_argument("-v", "--verbose", action="store_true", help="Provide more verbose output if specified.")
     
-    parser.add_argument("-X", "--raxml-executable", nargs=1, help="The name (or absolute path) of the NON-PTHREADS raxml executable to be used for inferring quartet topology replicates. If this argument is not supplied, then the name '"+ DEFAULT_RAXML + "' will be used. IMPORTANT NOTE: using a raxml version with quiet alignment validation is likely to drastically improve runtimes. One such version is available at http://github.com/chinchliff/standard-RAxML")
+    parser.add_argument("-X", "--raxml-executable", nargs=1, help="The name (or absolute path) of the NON-PTHREADS raxml executable to be used for inferring quartet topology replicates. If this argument is not supplied, then the name '"+ DEFAULT_RAXML + "' will be used. IMPORTANT NOTE: using a raxml version with silent alignment validation (i.e. which supports the `--silent` argument) is likely to drastically improve runtimes. The latest version from http://github.com/stamatak/standard-RAxML has this feature.")
 
     args = parser.parse_args()
     
@@ -135,9 +142,12 @@ if __name__ == "__main__":
     if not os.path.exists(temp_wd):
         os.mkdir(temp_wd)
 
-    topology_dir = results_dir + "/topology_sets/"
-    if not os.path.exists(topology_dir):
-        os.mkdir(topology_dir)
+    topology_dir = args.topology_sets_dir[0] if args.topology_sets_dir != None else temp_wd + "/topology_sets"
+    if os.path.exists(topology_dir):
+        shutil.rmtree(topology_dir)
+    os.mkdir(topology_dir)
+
+    calc_start_k = args.start_node_number[0] if args.start_node_number != None else 1
 
     calc_start_k = args.start_node_number[0] if args.start_node_number is not None else 1
 
@@ -187,6 +197,10 @@ if __name__ == "__main__":
     args.tree[0].close()
     leaves = tree.leaves()
 
+    calc_stop_k = args.stop_node_number[0] if args.stop_node_number != None else len(tree.leaves())+100
+    if calc_stop_k < calc_start_k:
+        sys.exit("The start node number is higher than the stop node number, designating no nodes for processing.")
+
     if args.verbose:
         print("tree has " + str(len(leaves)) + " leaves")
 
@@ -204,6 +218,10 @@ if __name__ == "__main__":
     starttime = time.time()
     root_bipart_label = None
     for node in tree.iternodes():
+
+        if k > calc_stop_k:
+            print("Processed all nodes up to the stop node. Quitting now")
+            exit()
 
         # skip tips and root
         if node.istip or node.parent == None:
@@ -254,21 +272,23 @@ if __name__ == "__main__":
             else:
                 time_string = ""
             print("\nprocessing node " + str(k) + time_string)
-            k += 1
 
         # debug code
 #        for i, child in enumerate(node.children):
 #            print(" child " + str(i) + " [" + ", ".join([l.label for l in child.leaves()[0:10]]) + "]" + (" + " + (str(len(child.leaves())-10) + " more") if (len(child.leaves())-10) > 0 else ""))
 
         # require a bifurcating tree
-        assert(len(node.children) == 2)
+#        assert(len(node.children) == 2)
+        if len(node.children) != 2:
+            print("Node %s does not have exactly 2 children. It will be skipped." % k)
+            continue 
 
         # get leaf sets for the four connected subtrees
         leafsets = {}
 
         # two daughter subtrees
-        leafsets["R1"] = set(node if node.istip else node.children[0].leaves())
-        leafsets["R2"] = set(node if node.istip else node.children[1].leaves())
+        leafsets["R1"] = set([node.children[0].label,] if node.istip else [l.label for l in node.children[0].leaves()])
+        leafsets["R2"] = set([node.children[1].label,] if node.istip else [l.label for l in node.children[1].leaves()])
 
         # sibling/parent subtrees
         is_other_side_of_root = False # used when we hit the root for the second time
@@ -287,13 +307,14 @@ if __name__ == "__main__":
 
                     # get the subtrees opposite the root
                     if len(sib.children) == 2:
-                        leafsets["L1"] = set(sib if sib.istip else sib.children[0].leaves())
-                        leafsets["L2"] = set(sib if sib.istip else sib.children[1].leaves())
+                        leafsets["L1"] = set([sib.children[0].label,] if sib.children[0].istip else [l.label for l in sib.children[0].leaves()])
+                        leafsets["L2"] = set([sib.children[1].label,] if sib.children[1].istip else [l.label for l in sib.children[1].leaves()])
                     elif len(sib.children) == 0:
                         skip_tip_child_of_root = True
                         tip_child_label = sib.label
                     else:
-                        sys.exit("Found a node in the tree with either 1 or more than 2 children. Knuckles and multifurcations are not allowed. Quitting.")
+                        print("Node %s does not have exactly 2 children. It will be skipped." % k)
+                        continue
 
                     # remember that we've already done the root, so we can skip it when we hit the other side
                     root_bipart_label = node.label
@@ -302,15 +323,18 @@ if __name__ == "__main__":
                 else:
 
                     # sibling subtree
-                    leafsets["L1"] = set(sib.leaves())
+                    leafsets["L1"] = set([l.label for l in sib.leaves()])
 
                     # the rest of the tree
                     leafsets["L2"] = set()
-                    for leaf in leaves:
-                        if leaf not in leafsets["R1"] and \
-                            leaf not in leafsets["R2"] and \
-                            leaf not in leafsets["L1"]:
-                                leafsets["L2"].add(leaf)
+                    for label in [l.label for l in leaves]:
+                        if label not in leafsets["R1"] and \
+                            label not in leafsets["R2"] and \
+                            label not in leafsets["L1"]:
+                                leafsets["L2"].add(label)
+
+        # no more user feedback, now we can increment k
+        k += 1
         
         if skip_tip_child_of_root:
             print("not calculating ica for tip child '" + tip_child_label + "' of the root (ica is 1.0, as for all tips).")
@@ -318,7 +342,8 @@ if __name__ == "__main__":
 
         # if we already processed the bipart at the root and this is the other side of that
         if is_other_side_of_root:
-            print("\nskipping second instance of root-adjacent bipartition (it was already processed at node " + root_bipart_label + ").")
+            print("\nskipping second instance of root-adjacent bipartition (it was already processed at node " + \
+                    root_bipart_label + ").")
             node.label = root_bipart_label
             continue
 
@@ -327,6 +352,8 @@ if __name__ == "__main__":
         for leafset in leafsets.itervalues():
             assert len(leafset) > 0
             t.update(leafset)
+#        print("t: " + ",".join(sorted(list(t))))
+#        print("leaves: " + ",".join(sorted([l.label for l in leaves])))
         assert len(t) == len(leaves)
         del(t)
 
@@ -347,7 +374,7 @@ if __name__ == "__main__":
             rep["seqs"] = {}
             for subtree_name, leaf_names in leafsets.iteritems():
                 while subtree_name not in rep["seqs"]: 
-                    leafname = random.sample(leaf_names, 1)[0].label
+                    leafname = random.sample(leaf_names, 1)[0] #[0].label
                     if leafname in aln:
                         rep["seqs"][subtree_name] = aln[leafname]
                         if args.verbose:
@@ -364,7 +391,7 @@ if __name__ == "__main__":
 
         # copy in original partitions file, should not change throughout run
         if using_partitions:
-            subprocess.call("cp " + parts_file_path + " temp_parts", shell=True)
+            subprocess.call("cp " + parts_file.name + " temp_parts", shell=True)
 
         # run the raxml calls in parallel
         # now designate multiprocessing resource pool.
@@ -383,7 +410,7 @@ if __name__ == "__main__":
 
         # now proces the results. first open a file to hold topologies
         count_bipart_observed = 0
-        topo_file_name = topology_dir + node.label + ".obs_topologies.txt"
+        topo_file_name = topology_dir + "/" + node.label + ".obs_topologies.txt"
         with open(topo_file_name, "w") as topo_file:
 
             while not results_queue.empty():
@@ -429,9 +456,10 @@ if __name__ == "__main__":
                     if ("L1" in names and "L2" in names) or ("R1" in names and "R2" in names):
                         ica = parts[-1] # ica score should be last item on line
                         break
+    
+        freq = str(count_bipart_observed / float(nreps))
 
         # write the scores to the file
-        freq = str(count_bipart_observed / float(nreps))
         with open(score_result_file_path, "a") as results_file:
             results_file.write(",".join([node.label, freq, ica]) + "\n")
 

@@ -104,12 +104,10 @@ class Node:
         return None
 
     def prune(self, logfile=None):
-
-#        print "attempting to prune " + self.label
         
         p = self.parent
         if p == None:
-            raise "attempt to remove final tip (or all tips) from tree"
+            raise ValueError("attempt to remove final tip (or all tips) from tree")
         
         if (logfile != None):
             logfile.write("removing " + self.label + "\n")
@@ -118,44 +116,36 @@ class Node:
         p.nchildren = len(p.children)
         if p.nchildren == 0:
             p.istip = True
-        
-#            print "remaining siblings: "
-#            for x in p.children:
-#                print str(x) + ": [" + ", ".join([c.label for c in x.iternodes()]) + "]"
  
         root_joint = None
         while len(p.children) == 1:
             
-#            print "collapsing joint below [" + " + ".join([s.label for s in p.leaves()[0:10]]) + "]"
             only_sib = p.children[0]
             
             if self.istip:
 
-                # this is a bunch of voodoo. not sure if it is going to work in all cases
                 if len(only_sib.children) > 0:
+                    # if the only remaining sister node has children, add them to the parent
                     for gc in only_sib.children:
                         p.add_child(gc)
                     p.remove_child(only_sib)
+                    p.length += only_sib.length
                     continue
-                elif not only_sib.istip: # only sib has no children and is not a tip, i.e. it is an empty subclade, so...
+                elif not only_sib.istip:
+                    # the only remaining sib has no children and is not a tip, i.e. it is an empty subclade, so...
                     p.prune()
                     break
             
-#            else:
             pp = p.parent
             if pp == None:
                 root_joint = p
-#                    print "initialized root knuckle"
                 break
         
-#            print("next sib is " + (only_child.label if only_child.label != None else "[" + " + ".join([s.label for s in only_child.leaves()[0:10]]) + "]"))
-    
             pp.remove_child(p)
             pp.add_child(only_sib)
+            only_sib.length += p.length
             p = pp
-            
-#            print("just created a node with children " + (p.label if p.label != None else "[" + " + ".join([s.label for s in p.leaves()[0:10]]) + "]"))
- 
+             
         if root_joint != None:
             while len(root_joint.children) < 2:
                 # prune knuckles at the root of the tree if necessary
@@ -163,18 +153,6 @@ class Node:
                 only_child.parent = None
                 only_child.isroot = True
                 root_joint = only_child
-
-        # if we have created a joint, collapse it
-#        while len(p.children) == 1:
-#            child = p.children[0]
-#            pp = p.parent
-#
-#            if pp != None: # check if we are at the root... not sure if this is correct
-#                pp.remove_child(p)
-#                pp.add_child(child)
-#                p = pp
-#            else:
-#                break
         
         return p
 
