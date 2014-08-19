@@ -59,12 +59,13 @@ def process_replicate(replicate):
         "-n", temp_aln_test_read_label, 
         "-m", "GTRCAT", 
         "-f", "c",
-        "-$",  # silent alignment validation mode, currently on chinchliff branch
+        "-$", ] # silent alignment validation mode, currently on chinchliff branch
 #        "--silent", # silent alignment validation mode, waiting for standard-raxml to work
-        ">", "/dev/null"]
+
     if using_partitions:
-        raxml_args.append("-q")
-        raxml_args.append(temp_part_fname)
+        raxml_args += ["-q", temp_part_fname]
+
+    raxml_args += [">", "/dev/null"]
 
     subprocess.call(" ".join(raxml_args), shell=True)
     
@@ -80,11 +81,12 @@ def process_replicate(replicate):
         "-n", temp_ml_search_label, \
         "-m", "GTRCAT", \
         "-p", "123", \
-        "-F",
-        ">", "/dev/null"]
+        "-F", ]
+
     if using_partitions:
-        raxml_args.append("-q")
-        raxml_args.append(temp_part_fname)
+        raxml_args += ["-q", temp_part_fname]
+    
+    raxml_args += [">", "/dev/null"]
 
     result["raxml_args"] = " ".join(raxml_args)
     subprocess.call(result["raxml_args"], shell=True)
@@ -387,7 +389,7 @@ if __name__ == "__main__":
 
         # copy in original partitions file, should not change throughout run
         if using_partitions:
-            subprocess.call("cp " + parts_file_path + " temp_parts", shell=True)
+            subprocess.call("cp " + parts_file.name + " temp_parts", shell=True)
 
         # run the raxml calls in parallel
         # now designate multiprocessing resource pool.
