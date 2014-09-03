@@ -30,15 +30,9 @@ def process_replicate(replicate):
     node_id = replicate["node_id"]
     replicate_id = replicate["replicate_id"]
     raxml_path = replicate["raxml_path"]
-    all_seqs = replicate["seqs"]
+    seqs = replicate["seqs"]
 
     result = {}
-    result["seq_labels"] = {}
-    for w in "LR":
-        result["seq_labels"][w] = []
-        for x in range(1,3):
-            for y in all_seqs[w+str(x)].keys():
-                result["seq_labels"][w].append(w+str(x)+"_"+str(y))
 
     # generate a label that will be unique within this run (but probably not among runs!)
     unique_label = node_id + "." + replicate_id
@@ -53,16 +47,11 @@ def process_replicate(replicate):
     temp_aln_test_read_label = "temp_read_aln." + unique_label
     temp_ml_search_label = "temp_tree_search." + unique_label
 
-    seqs = {}
-    for subtree_name, subtree_seqs in all_seqs.iteritems():
-        for i, s in subtree_seqs.iteritems():
-            seqs[subtree_name+"_"+str(i)] = s
-
     # write the alignment
     with open(temp_aln_fname,"w") as outfile:
-        outfile.write(str(len(seqs)) + " " + str(len(seqs[seqs.keys()[0]])) + "\n")
-        for l, s in seqs.iteritems():
-            outfile.write(l + " " + s + "\n")
+        outfile.write("4 " + str(len(seqs[seqs.keys()[0]])) + "\n")
+        for subtree_name, seq in seqs.iteritems():
+            outfile.write(subtree_name + " " + seq + "\n")
     
     # test alignment readability by raxml, also filters entirely missing columns
     raxml_args = [raxml_path, 
@@ -71,40 +60,14 @@ def process_replicate(replicate):
         "-m", "GTRCAT", 
         "-f", "c",
         "-$", ] # silent alignment validation mode, currently on chinchliff branch
-#        "--silent" ] # silent alignment validation mode, waiting for standard-raxml to work
+#        "--silent", # silent alignment validation mode, waiting for standard-raxml to work
 
     if using_partitions:
         raxml_args += ["-q", temp_part_fname]
 
-    p = subprocess.Popen(raxml_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    res = p.communicate()[0]
-    identical_seqs = {}
-    if res != None:
-#        print res
-        for line in res.split("\n"):
-            if line.find("IMPORTANT WARNING:") >= 0:
-                parts = line.split()
-                if parts[3] == "validation":
-                    continue
+    raxml_args += [">", "/dev/null"]
 
-                n1 = parts[3]
-                n2 = parts[5]
-
-                if n1 not in identical_seqs:
-                    identical_seqs[n1] = set()
-                identical_seqs[n1].add(n2)
-
-#    print identical_seqs
-    result["identical"] = {}
-    for r in identical_seqs.keys():
-        result["identical"][r] = set()
-        result["identical"][r].update(identical_seqs[r])
-        for m in identical_seqs[r]:
-            if m in identical_seqs:
-                result["identical"][r].update(identical_seqs[m])
-    
-#    print result["identical"]
-#    exit()
+    subprocess.call(" ".join(raxml_args), shell=True)
     
     if os.path.exists(temp_aln_fname + ".reduced"):
         temp_aln_fname = temp_aln_fname + ".reduced"
@@ -118,16 +81,15 @@ def process_replicate(replicate):
         "-n", temp_ml_search_label, \
         "-m", "GTRCAT", \
         "-p", "123", \
-        "-F" ]
+        "-F", ]
 
     if using_partitions:
         raxml_args += ["-q", temp_part_fname]
     
-#    raxml_args += [">", "/dev/null"]
+    raxml_args += [">", "/dev/null"]
 
     result["raxml_args"] = " ".join(raxml_args)
-    p = subprocess.Popen(raxml_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    result["raxml_stdout"], result["raxml_stderr"] = p.communicate()
+    subprocess.call(result["raxml_args"], shell=True)
 
     result["label"] = unique_label
     queue.put(result)
@@ -151,8 +113,6 @@ if __name__ == "__main__":
 
     parser.add_argument("-T", "--number-of-threads", type=int, nargs=1, required=True, help="The number of parallel threads to be used for quartet topology searches.")
     
-    parser.add_argument("-d", "--samples-per-subtree", type=int, nargs=1, help="The maximum number of taxa to include for each subtree attached to the branch.")
-    
     parser.add_argument("-q", "--partitions", type=os.path.expanduser, nargs=1, help="Partitions file in RAxML format. If omitted then the entire alignment will be treated as one partition for all quartet replicate topology searches.")
 
     parser.add_argument("-o", "--results-dir", type=os.path.expanduser, nargs=1, help="A directory to which output files will be saved. If not supplied, the current working directory will be used.")
@@ -170,8 +130,6 @@ if __name__ == "__main__":
     parser.add_argument("-X", "--raxml-executable", nargs=1, help="The name (or absolute path) of the NON-PTHREADS raxml executable to be used for inferring quartet topology replicates. If this argument is not supplied, then the name '"+ DEFAULT_RAXML + "' will be used. IMPORTANT NOTE: using a raxml version with silent alignment validation (i.e. which supports the `--silent` argument) is likely to drastically improve runtimes. The latest version from http://github.com/stamatak/standard-RAxML has this feature.")
 
     args = parser.parse_args()
-    
-    d = args.samples_per_subtree[0] if args.samples_per_subtree != None else 1
     
     results_dir = os.path.abspath(args.results_dir[0]) if args.results_dir != None else os.path.abspath(".")
     if not os.path.exists(results_dir):
@@ -407,7 +365,7 @@ if __name__ == "__main__":
         assert len(t) == len(leaves)
         del(t)
 
-        # randomly subsample up to d exemplar tips from each subtree
+        # randomly subsample an exemplar tip from each subtree
         replicates = []
         n_completed = manager.Value("i", 0, "lock")
         results_queue = manager.Queue()
@@ -423,24 +381,14 @@ if __name__ == "__main__":
             rep["raxml_path"] = raxml_path
             rep["seqs"] = {}
             for subtree_name, leaf_names in leafsets.iteritems():
-                
-#                while subtree_name not in rep["seqs"]: 
-#                    leafname = random.sample(leaf_names, 1)[0] #[0].label
-                rep["seqs"][subtree_name] = {}
-
-                if len(leaf_names) > d:
-                    ln = random.sample(leaf_names, d)
-                else:
-                    ln = leaf_names
-
-                if args.verbose:
-                    print("using exemplars [" + ", ".join(ln) + "] for " + subtree_name)
-
-                for q, l in enumerate(ln):
-                    if l in aln:
-                        rep["seqs"][subtree_name][q] = aln[l]
+                while subtree_name not in rep["seqs"]: 
+                    leafname = random.sample(leaf_names, 1)[0] #[0].label
+                    if leafname in aln:
+                        rep["seqs"][subtree_name] = aln[leafname]
+                        if args.verbose:
+                            print("using exemplar " + leafname + " for " + subtree_name)
                     else:
-                        print("\nWARNING: name " + l + " not in alignment")
+                        print("\nWARNING: name " + leafname + " not in alignment")
 
             replicates.append(rep)
 
@@ -457,20 +405,18 @@ if __name__ == "__main__":
         # now designate multiprocessing resource pool.
         # important to do this outside the node loop as regular garbage collecting does not seem
         # to apply to the threads! also, set maxtasksperchild to release memory and files!
-#        pool = Pool(processes=nprocs, maxtasksperchild=1)
-#        pool.map(process_replicate, replicates)
-#        pool.close()
-#        pool.join()
-#        del(pool)
+        pool = Pool(processes=nprocs, maxtasksperchild=1)
+        pool.map(process_replicate, replicates)
+        pool.close()
+        pool.join()
+        del(pool)
         
         # use for testing to allow isolation/identification of errors within mapped functions
-        map(process_replicate, replicates) # use for testing
+#        map(process_replicate, replicates) # use for testing
 
-#        exit()
-        
         print("")
 
-        # now process the results. first open a file to hold topologies
+        # now proces the results. first open a file to hold topologies
         count_bipart_observed = 0
         topo_file_name = topology_dir + "/" + node.label + ".obs_topologies.txt"
         with open(topo_file_name, "w") as topo_file:
@@ -478,145 +424,48 @@ if __name__ == "__main__":
             while not results_queue.empty():
                 result = results_queue.get()
 
-#                print ("seq labels")
-#                print result["seq_labels"]
-#                print ("identical")
-#                print result["identical"]
-                
                 # attempt to open the raxml result
                 raxml_result_tree_file_path = "RAxML_result.temp_tree_search." + result["label"]
                 if os.path.exists(raxml_result_tree_file_path):
-                    with open(raxml_result_tree_file_path, "r") as tree_result:
-                        result_tree = newick3.parse(tree_result.readline())
-                        
-                    for n in result_tree.leaves():
-                        if n.label in result["identical"]:
-
-                            # here, find the present element from each pair of identical elements, and attach the other one to it
-                            # this might be more challenging if raxml successively prunes when there are more than 2 elements
-                            # test this, if raxml provides multiple pairs of identical sequence names, then just look through these,
-                            # and combine the overlapping ones, before seeking present elements
-
-                            names = result["identical"][n.label]
-                            names.add(n.label)
-                            for m in names:
-                                c = phylo3.Node()
-                                c.label = m
-                                c.istip = True
-                                n.add_child(c)
-                            n.istip=False
-#                            exit()
-                        
+                    with open(raxml_result_tree_file_path, "r") as result:
+                        result_tree = newick3.parse(result.readline())
                 else:
-#                    print("WARNING: raxml did not complete successfully. The failed command was:\n\n" + result["raxml_args"] + "\n")
-#                    print(result["raxml_stdout"])
-#                    print(result["raxml_stderr"])
-                    
-                    # check if all of the L or R seqs are identical, and none are in the other category (l vs. r)
-#                    result["identical_side"] = None
-                    for key, n in result["identical"].iteritems():
-
-                        names = set()
-                        names.update(n)
-                        names.add(key)
-                        print names
-                        
-                        all_found_r = True
-                        any_found_r = False
-
-                        all_found_l = True
-                        any_found_l = False
-
-                        for l in result["seq_labels"]["R"]:
-                            if l not in names:
-                                all_found_r = False
-                            else:
-                                any_found_r = True
-
-                        for l in result["seq_labels"]["L"]:
-                            if l not in names:
-                                all_found_l = False
-                            else:
-                                any_found_l = True
-
-                        print "all_found_r " + str(all_found_r)
-                        print "any_found_r " + str(any_found_r)
-                        print "all_found_l " + str(all_found_l)
-                        print "any_found_l " + str(any_found_l)
-                        
-                        # not sure if having two options here should have any effect... i think they are the same for practical purposes
-                        if (all_found_r and not any_found_l):
-#                            result["identical_side"] = "R"
-                            r_tree_string = "((" + ",".join(result["seq_labels"]["R"]) + "),(" + ",".join(result["seq_labels"]["L"]) + "));"
-                        elif (all_found_l and not any_found_r):
-#                            result["identical_side"] = "L"
-                            r_tree_string = "((" + ",".join(result["seq_labels"]["L"]) + "),(" + ",".join(result["seq_labels"]["R"]) + "));"
-                        else:
-                            r_tree_string = "(" + ",".join(result["seq_labels"]["L"] + result["seq_labels"]["R"]) + ");" 
-                        
-                        result_tree = newick3.parse(r_tree_string)
-#                    continue
+                    print("WARNING: raxml did not complete successfully. The failed command was:\n\n" + result["raxml_args"] + "\n")
+                    continue
 
                 # write the result topology to the set of observed topologies for this node
                 topo_file.write(newick3.to_string(result_tree)+";\n")
 
+                # check to see if it contains the original bipartition
+                for testnode in result_tree.iternodes():
+
+                    # skip tips and root
+                    if testnode.istip or testnode.parent == None:
+                        continue
+
+                    # assumes root bipart is not in pxbp output, so we can just check included names (excluded are implied)
+                    testnode_leafnames = [l.label for l in testnode.leaves()]
+                    if ("L1" in testnode_leafnames and "L2" in testnode_leafnames) or \
+                            ("R1" in testnode_leafnames and "R2" in testnode_leafnames):
+                        count_bipart_observed += 1
+
         # get the ICA score from phyx
         pxbp_outfile = "temp_pxbp_out." + node.label
         pxbp_args = ["pxbp", "-t", topo_file_name, ">", pxbp_outfile]
-
         subprocess.call(" ".join(pxbp_args),shell=True)
-        
-        # set default values: if we don't find a score in the pxbp output then this bipart is never observed
-        ica = "-1"
-        freq = "0"
-
+        ica = "-1" # if we don't find a score in the pxbp output then this bipart is never observed
         with open(pxbp_outfile,"r") as pxbp_result:
             for line in pxbp_result:
-                parts = line.split("\t")
-                if len(parts) > 1:
+                parts = line.split()
+                if len(parts) > 2:
 
-                    names = set(parts[0].split()) 
-                    
-                    l_name_observed = False
-                    l_name_missing = False
-                    r_name_observed = False
-                    r_name_missing = False
-                    for q in range(d):
-                    
-                        if q in rep["seqs"]["L1"].keys():
-                            name = "L1_"+str(q)
-                            if name in names:
-                                l_name_observed = True
-                            else:
-                                l_name_missing = True
-                    
-                        if q in rep["seqs"]["L2"].keys():
-                            name = "L2_"+str(q)
-                            if name in names:
-                                l_name_observed = True
-                            else:
-                                l_name_missing = True
-                        
-                        if q in rep["seqs"]["R1"].keys():
-                            name = "R1_"+str(q)
-                            if name in names:
-                                r_name_observed = True
-                            else:
-                                r_name_missing = True
-                    
-                        if q in rep["seqs"]["R2"].keys():
-                            name = "R2_"+str(q)
-                            if name in names:
-                                r_name_observed = True
-                            else:
-                                r_name_missing = True
-
-                    if (l_name_observed and not (l_name_missing or r_name_observed)) or \
-                       (r_name_observed and not (r_name_missing or l_name_observed)):
-
+                    # tests assume that root bipart is not in list, thus all biparts have exactly two names (the ingroup)
+                    names = set(parts[0:2]) 
+                    if ("L1" in names and "L2" in names) or ("R1" in names and "R2" in names):
                         ica = parts[-1] # ica score should be last item on line
-                        freq = parts[-3] if ica.strip() != "1" else "1"
                         break
+    
+        freq = str(count_bipart_observed / float(nreps))
 
         # write the scores to the file
         with open(score_result_file_path, "a") as results_file:
@@ -629,11 +478,11 @@ if __name__ == "__main__":
         # clean up
         del(results_queue)
         del(n_completed)
-    
-#        exit()
-    
+
+#        del(n_completed)
+#        del(count_bipart_observed)
         # redirecting stderr because it prints a bunch of failed calls. not sure why as the command seems to be working as expected...
-#        subprocess.call("rm *." + node.label + ".* 2> /dev/null", shell=True)
+        subprocess.call("rm *." + node.label + ".* 2> /dev/null", shell=True)
     
     print("\ndone.\nscores written to: " + score_result_file_path + \
         "\nlabeled tree written to: " + tree_result_file_path + \

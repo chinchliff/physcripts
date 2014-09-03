@@ -1,4 +1,3 @@
-import newick3
 from copy import deepcopy as copy
 
 #import sets
