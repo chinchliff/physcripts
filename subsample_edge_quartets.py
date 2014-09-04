@@ -457,14 +457,14 @@ if __name__ == "__main__":
         # now designate multiprocessing resource pool.
         # important to do this outside the node loop as regular garbage collecting does not seem
         # to apply to the threads! also, set maxtasksperchild to release memory and files!
-#        pool = Pool(processes=nprocs, maxtasksperchild=1)
-#        pool.map(process_replicate, replicates)
-#        pool.close()
-#        pool.join()
-#        del(pool)
+        pool = Pool(processes=nprocs, maxtasksperchild=1)
+        pool.map(process_replicate, replicates)
+        pool.close()
+        pool.join()
+        del(pool)
         
         # use for testing to allow isolation/identification of errors within mapped functions
-        map(process_replicate, replicates) # use for testing
+#        map(process_replicate, replicates) # use for testing
 
 #        exit()
         
@@ -478,13 +478,9 @@ if __name__ == "__main__":
             while not results_queue.empty():
                 result = results_queue.get()
 
-#                print ("seq labels")
-#                print result["seq_labels"]
-#                print ("identical")
-#                print result["identical"]
-                
                 # attempt to open the raxml result
                 raxml_result_tree_file_path = "RAxML_result.temp_tree_search." + result["label"]
+                result_tree = None
                 if os.path.exists(raxml_result_tree_file_path):
                     with open(raxml_result_tree_file_path, "r") as tree_result:
                         result_tree = newick3.parse(tree_result.readline())
@@ -492,11 +488,7 @@ if __name__ == "__main__":
                     for n in result_tree.leaves():
                         if n.label in result["identical"]:
 
-                            # here, find the present element from each pair of identical elements, and attach the other one to it
-                            # this might be more challenging if raxml successively prunes when there are more than 2 elements
-                            # test this, if raxml provides multiple pairs of identical sequence names, then just look through these,
-                            # and combine the overlapping ones, before seeking present elements
-
+                            # create a polytomy for each set of identical sequences
                             names = result["identical"][n.label]
                             names.add(n.label)
                             for m in names:
@@ -505,15 +497,15 @@ if __name__ == "__main__":
                                 c.istip = True
                                 n.add_child(c)
                             n.istip=False
-#                            exit()
                         
                 else:
 #                    print("WARNING: raxml did not complete successfully. The failed command was:\n\n" + result["raxml_args"] + "\n")
 #                    print(result["raxml_stdout"])
 #                    print(result["raxml_stderr"])
                     
+                    r_tree_string = "(" + ",".join(result["seq_labels"]["L"] + result["seq_labels"]["R"]) + ");" 
+
                     # check if all of the L or R seqs are identical, and none are in the other category (l vs. r)
-#                    result["identical_side"] = None
                     for key, n in result["identical"].iteritems():
 
                         names = set()
@@ -539,10 +531,10 @@ if __name__ == "__main__":
                             else:
                                 any_found_l = True
 
-                        print "all_found_r " + str(all_found_r)
-                        print "any_found_r " + str(any_found_r)
-                        print "all_found_l " + str(all_found_l)
-                        print "any_found_l " + str(any_found_l)
+#                        print "all_found_r " + str(all_found_r)
+#                        print "any_found_r " + str(any_found_r)
+#                        print "all_found_l " + str(all_found_l)
+#                        print "any_found_l " + str(any_found_l)
                         
                         # not sure if having two options here should have any effect... i think they are the same for practical purposes
                         if (all_found_r and not any_found_l):
@@ -551,11 +543,8 @@ if __name__ == "__main__":
                         elif (all_found_l and not any_found_r):
 #                            result["identical_side"] = "L"
                             r_tree_string = "((" + ",".join(result["seq_labels"]["L"]) + "),(" + ",".join(result["seq_labels"]["R"]) + "));"
-                        else:
-                            r_tree_string = "(" + ",".join(result["seq_labels"]["L"] + result["seq_labels"]["R"]) + ");" 
                         
-                        result_tree = newick3.parse(r_tree_string)
-#                    continue
+                    result_tree = newick3.parse(r_tree_string)
 
                 # write the result topology to the set of observed topologies for this node
                 topo_file.write(newick3.to_string(result_tree)+";\n")
