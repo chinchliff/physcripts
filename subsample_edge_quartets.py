@@ -457,14 +457,14 @@ if __name__ == "__main__":
         # now designate multiprocessing resource pool.
         # important to do this outside the node loop as regular garbage collecting does not seem
         # to apply to the threads! also, set maxtasksperchild to release memory and files!
-#        pool = Pool(processes=nprocs, maxtasksperchild=1)
-#        pool.map(process_replicate, replicates)
-#        pool.close()
-#        pool.join()
-#        del(pool)
+        pool = Pool(processes=nprocs, maxtasksperchild=1)
+        pool.map(process_replicate, replicates)
+        pool.close()
+        pool.join()
+        del(pool)
         
         # use for testing to allow isolation/identification of errors within mapped functions
-        map(process_replicate, replicates) # use for testing
+#        map(process_replicate, replicates) # use for testing
 
 #        exit()
         
