@@ -44,6 +44,8 @@ if __name__ == '__main__':
 
     # read in the alignment, recording the taxon names in a separate dict
     taxa = {}
+    ntax = 0
+    ncols = 0
     aln_file = open(aln_filename,"rb")
     on_first_line = True
     for line in aln_file:
@@ -135,13 +137,15 @@ if __name__ == '__main__':
             sampling_matrix.write('\n')
 
     with open(output_label + '.subsampled.phy', 'w') as subsampled_aln:
+        subsampled_aln.write(ntax + ' ' + ncols + "\n")
         for t in taxa_sorted:
+            subsampled_aln.write(t[0] + ' ')
             for p in parts_sorted:
                 if sample_bitmap[t[0]][p[0]]:
                     subsampled_aln.write(parts[p[0]]['data'][t[0]])
                 else:
                     subsampled_aln.write('-' * len(parts[p[0]]['data'][t[0]]))
-            subsampled_aln.write('\n')
+            subsampled_aln.write("\n")
 
     print('files have been written to: ' + output_label + '.sampling_matrix.txt, ' + output_label + '.subsampled.phy\n' \
           'sampling proportion is ' + str(float(k) / (len(parts) * len(taxa))))
