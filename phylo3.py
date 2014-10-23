@@ -17,6 +17,14 @@ class Node:
         self.excluded_dists = []
         self.comment = None
 
+#    @property
+#    def is_tip(self):
+#        return self.istip
+#    
+#    @is_tip.setter
+#    def is_tip(self, is_tip):
+#        self.istip = is_tip        
+
     def order_subtrees_by_size(self, n2s=None, recurse=False, reverse=False):
         if n2s is None:
             n2s = node2size(self)
@@ -65,9 +73,7 @@ class Node:
         return None
 
     def iternodes(self, order=PREORDER, v=None):
-        """
-        returns a list of nodes descendant from self - including self
-        """
+        '''returns a list of nodes descendant from self - including self'''
         if order == PREORDER:
             yield self
         for child in self.children:
@@ -77,9 +83,7 @@ class Node:
             yield self
 
     def descendants(self, order=PREORDER, v=None):
-        """
-        returns a list of nodes descendant from self - not including self!
-        """
+        '''returns a list of nodes descendant from self - not including self!'''
         if v is None:
             v = []
         assert order in (PREORDER, POSTORDER)
@@ -154,6 +158,20 @@ class Node:
                 root_joint = only_child
         
         return p
+    
+    def _calc_depth(self):
+        '''recursively calculate the depth of this node'''
+        if len(self.children) < 1:
+            return self.length
+        else:
+            return self.length + max([c.depth for c in self.children])
+
+    @property
+    def depth(self):
+        '''return the depth of this node in the tree'''
+        # currently just calculating the depth for every call. should really store this
+        # and just update it when necessary
+        return self._calc_depth()
 
     def graft(self, node):
         parent = self.parent
@@ -164,10 +182,7 @@ class Node:
         parent.add_child(n)
 
     def leaf_distances(self, store=None, measure=BRANCHLENGTH):
-        """
-        for each internal node, calculate the distance to each leaf,
-        measured in branch length or internodes
-        """
+        '''for each internal node, calculate the distance to each leaf, measured in branch length or internodes'''
         if store is None:
             store = {}
         leaf2len = {}
