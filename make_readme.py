@@ -1,15 +1,7 @@
 #!/usr/bin/env python
 """Generate simple markdown documentation for the scripts in this directory"""
 
-from StringIO import StringIO
-
-if __name__ == '__main__':
-
-    import os
-
-    observed = set([])
-
-    print("""## Basic documentation
+preamble = """## Basic documentation
     
 This directory contains a bunch of scripts to automate common (or not so common) tasks, mostly targeted at bioinformatics and phylogenetic systematic research. To install the scripts, clone the git repo into a local directory and add that directory to your PATH and PYTHONPATH environment variables. E.g.:
 
@@ -33,7 +25,15 @@ The descriptions below include a variety of example calls to the scripts. The in
 
 What follows is a (complete) list of the available Python scripts, along with (highly incomplete) descriptive documentation about each one. More information can usually be found in the form of comments within the scripts (in addition, of course, to the hopefully somewhat self-documenting code itself).
 
-""")
+"""
+
+if __name__ == '__main__':
+
+    import os, re
+    from StringIO import StringIO
+
+    descriptions = {}
+    titles = {}
 
     for d in os.listdir('.'):
 
@@ -45,27 +45,48 @@ What follows is a (complete) list of the available Python scripts, along with (h
         except:
             continue
         
-        if d in observed:
+        if d in descriptions:
             continue
 
-        observed.add(d)
+        s = StringIO()
         
         if (hasattr(x, '_title')):
-            print('\n---')
-            print('\n### ' + x._title)
+            s.write('\n---\n')
+            s.write('\n### ' + x._title + '\n')
+            titles[d] = x._title
     
-        print('\n`' + x.__name__ + '`')
+        s.write('\n`' + x.__name__ + '`\n')
 
         if (x.__doc__ is not None):
-            print('\n' + x.__doc__)
+            s.write('\n' + x.__doc__ + '\n')
             
         if (hasattr(x, '_example_args')):
-            print('```bash\n')
-            s = StringIO()
+            s.write('```bash\n')
             s.write(d + '.py ')
             for k, v in x._example_args.items():
                 s.write(k + ' ')
                 if v is not None:
                     s.write(v + ' ')
-            s.write('\n```')                
-            print s.getvalue()            
+            s.write('\n```\n')
+        
+        descriptions[d] = s.getvalue()
+    
+    # now print the document
+    print(preamble)
+    
+    scripts = sorted(descriptions.keys())
+
+    # create links to descriptions with titles    
+    for d in scripts:
+        if d in titles:
+            print('[' + titles[d] + '](#' + re.sub("\s+", "-", titles[d].strip()) + ')')
+
+    # write decriptions with titles
+    for d in scripts:
+        if d in titles:
+            print descriptions[d]
+
+    # write other (incomplete) descriptions    
+    for d in scripts:
+        if d not in titles:
+            print descriptions[d]
