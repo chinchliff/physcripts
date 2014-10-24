@@ -29,7 +29,7 @@ if __name__ == '__main__':
         if (hasattr(x, '_title')):
             print('\n### ' + x._title)
     
-        print("\n'''" + x.__name__ + "'''")
+        print('\n```' + x.__name__ + '```')
 
         if (x.__doc__ is not None):
             print('\n' + x.__doc__)
