@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Adds names from a file into to an tree, while maintaining the depths for all affected internal nodes, and ensuring that newly added tips will have depths equal to the depth of their sister clades. In other words, this will maintain the time-relations in the chronogram as new tips are added."""
+"""Adds names from an input file into to a designated tree, while maintaining consistent depths for all affected internal nodes, and ensuring that newly added tips will have depths equal to the depth of their sister clades. In other words, this will maintain the time-relations in the chronogram as new tips are added."""
 _title = 'Add tips to a chronogram'
 _example_args = {
     '-d': '~/phylo/data/gbpln_2014_04_25.db', # need to make a small standalone example for this

@@ -24,6 +24,8 @@ The descriptions below include a variety of example calls to the scripts. The in
 
 Below is a (complete) list of the available Python scripts, along with (highly incomplete) descriptive documentation about each one. Scripts with more complete documentation are listed here as links, and their documentation precedes those with less information. More details can usually be found in the form of comments within the scripts (in addition, of course, to my optimistically somewhat self-documenting code).
 
+#### Scripts with more complete documentation:
+
 
 [Add tips to a chronogram](#add-tips-to-a-chronogram)
 
@@ -36,7 +38,7 @@ Below is a (complete) list of the available Python scripts, along with (highly i
 
 script: `add_species_to_chronogram.py`
 
-Adds names from a file into to an tree, while maintaining the depths for all affected internal nodes, and ensuring that newly added tips will have depths equal to the depth of their sister clades. In other words, this will maintain the time-relations in the chronogram as new tips are added.
+Adds names from an input file into to a designated tree, while maintaining consistent depths for all affected internal nodes, and ensuring that newly added tips will have depths equal to the depth of their sister clades. In other words, this will maintain the time-relations in the chronogram as new tips are added.
 ```bash
 add_species_to_chronogram.py -d ~/phylo/data/gbpln_2014_04_25.db -n test_files/names_and_synonyms.txt 
 ```
@@ -48,11 +50,12 @@ add_species_to_chronogram.py -d ~/phylo/data/gbpln_2014_04_25.db -n test_files/n
 
 script: `extract_names_and_ids_from_phlawd_db.py`
 
-Given a set of names, extract information about those names from the specified PHLAWD database.
+Given a set of names, extract some minimal information about those names from a specified PHLAWD database.
 ```bash
 extract_names_and_ids_from_phlawd_db.py -t test_files/tree_with_50_tips.tre -n test_files/names_50.txt -s -b 0.1 
 ```
 
+#### Scripts with less complete documentation below here:
 
 script: `clean_gb_names_simple_fasta.py`
 

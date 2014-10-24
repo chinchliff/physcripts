@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Given a set of names, extract information about those names from the specified PHLAWD database."""
+"""Given a set of names, extract some minimal information about those names from a specified PHLAWD database."""
 _title = 'Get information about names from a PHLAWD database'
 _example_args = {
     '-t': 'test_files/tree_with_50_tips.tre',

@@ -25,6 +25,8 @@ The descriptions below include a variety of example calls to the scripts. The in
 
 Below is a (complete) list of the available Python scripts, along with (highly incomplete) descriptive documentation about each one. Scripts with more complete documentation are listed here as links, and their documentation precedes those with less information. More details can usually be found in the form of comments within the scripts (in addition, of course, to my optimistically somewhat self-documenting code).
 
+#### Scripts with more complete documentation:
+
 """
 
 if __name__ == '__main__':
@@ -85,6 +87,8 @@ if __name__ == '__main__':
     for d in scripts:
         if d in titles:
             print descriptions[d]
+
+    print("#### Scripts with less complete documentation below here:")
 
     # write other (incomplete) descriptions    
     for d in scripts:
