@@ -25,9 +25,9 @@ The descriptions below include a variety of example calls to the scripts. The in
 What follows is a (complete) list of the available Python scripts, along with (highly incomplete) descriptive documentation about each one. More information can usually be found in the form of comments within the scripts (in addition, of course, to the hopefully somewhat self-documenting code itself).
 
 
-* [Add tips to a chronogram](#add-tips-to-a-chronogram)
+[Add tips to a chronogram](#add-tips-to-a-chronogram)
 
-* [Get information about names from a PHLAWD database](#get-information-about-names-from-a-phlawd-database)
+[Get information about names from a PHLAWD database](#get-information-about-names-from-a-phlawd-database)
 
 
 ---

@@ -79,7 +79,7 @@ if __name__ == '__main__':
     # create links to descriptions with titles    
     for d in scripts:
         if d in titles:
-            print('* [' + titles[d] + '](#' + re.sub("\s+", "-", titles[d].lower().strip()) + ')\n')
+            print('[' + titles[d] + '](#' + re.sub("\s+", "-", titles[d].lower().strip()) + ')\n')
 
     # write descriptions with titles
     for d in scripts:
