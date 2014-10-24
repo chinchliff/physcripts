@@ -66,7 +66,7 @@ if __name__ == '__main__':
             
         if (hasattr(x, '_example_args')):
             s.write('```bash\n')
-            s.write(d + '.py ')
+            s.write('./' + d + '.py ')
             for k, v in x._example_args.items():
                 s.write(k + ' ')
                 if v is not None:
