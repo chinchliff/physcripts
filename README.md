@@ -35,7 +35,7 @@ More details can usually be found in the form of comments within the scripts (in
 
 [Create a sampling matrix from a set of FASTA files](#create-a-sampling-matrix-from-a-set-of-fasta-files)
 
-[Use a rooted superset tree to infer the root position in a subset tree](#use-a-rooted-superset-tree-to-infer-the-root-position-in-a-subset-tree)
+[Use a superset tree to infer the root position in a subset tree](#use-a-superset-tree-to-infer-the-root-position-in-a-subset-tree)
 
 [Estimate quartet jackknife ICA support on a tree](#estimate-quartet-jackknife-ica-support-on-a-tree)
 
@@ -88,7 +88,7 @@ This script requires BioPython.
 
 ---
 
-### Use a rooted superset tree to infer the root position in a subset tree
+### Use a superset tree to infer the root position in a subset tree
 
 script: `root_tree_against_master.py`
 
