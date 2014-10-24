@@ -25,6 +25,7 @@ What follows is a (complete) list of the available Python scripts, along with (h
 
 ---
 
+
 ### Add tips to a chronogram
 
 `add_species_to_chronogram`
@@ -41,6 +42,7 @@ add_species_to_chronogram.py -d ~/phylo/data/gbpln_2014_04_25.db -n test_files/n
 
 `excise_knuckles`
 ---
+
 
 ### Get information about names from a PHLAWD database
 
