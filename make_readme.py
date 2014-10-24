@@ -9,7 +9,26 @@ if __name__ == '__main__':
 
     observed = set([])
 
-    print('## Basic documentation\n')
+    print("""## Basic documentation
+    
+This directory contains a bunch of scripts to automate common (or not so common) tasks, mostly targeted at bioinformatics and phylogenetic systematic research. To install the scripts, clone the git repo into a local directory and add that directory to your PATH and PYTHONPATH environment variables. E.g.:
+
+```bash
+# clone the scripts repo
+cd ~/ && git clone https://github.com/chinchliff/physcripts
+
+# add it to paths
+echo 'export PATH=/Users/cody/physcripts:$PATH' >> ~/.bash_profile
+echo 'export PYTHONPATH=/Users/cody/physcripts:$PYTHONPATH' >> ~/.bash_profile
+
+# load new environment variables
+source ~/.bash_profile
+
+## Running examples
+
+Example input files (referred to in examples below) are included in the `test_files` directory, and the example script calls are written to be run from within the physcripts directory. To run the examples (using the example inputs) outside of that directory, you'll need to edit the calls to indicate the correct path to the example input files. 
+
+```""")
 
     for d in os.listdir('.'):
 
