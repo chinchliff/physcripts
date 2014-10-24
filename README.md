@@ -33,7 +33,7 @@ Below is a (complete) list of the available Python scripts, along with (highly i
 
 [Create a sampling matrix from a set of FASTA files](#create-a-sampling-matrix-from-a-set-of-fasta-files)
 
-[Run the quartet jackknife ICA support estimation procedure on a tree](#run-the-quartet-jackknife-ica-support-estimation-procedure-on-a-tree)
+[Estimate quartet jackknife ICA support on a tree](#estimate-quartet-jackknife-ica-support-on-a-tree)
 
 
 ---
@@ -84,7 +84,7 @@ This script requires BioPython.
 
 ---
 
-### Run the quartet jackknife ICA support estimation procedure on a tree
+### Estimate quartet jackknife ICA support on a tree
 
 script: `subsample_edge_quartets.py`
 
