@@ -2,8 +2,10 @@
 """Adds names from an input file into to a designated tree, while maintaining consistent depths for all affected internal nodes, and ensuring that newly added tips will have depths equal to the depth of their sister clades. In other words, this will maintain the time-relations in the chronogram as new tips are added."""
 _title = 'Add tips to a chronogram'
 _example_args = {
-    '-d': '~/phylo/data/gbpln_2014_04_25.db', # need to make a small standalone example for this
-    '-n': 'test_files/names_and_synonyms.txt',}
+    '-t': 'test_files/tree_with_50_tips.tre',
+    '-n': 'test_files/names_50.txt',
+    '-b': '0.1',
+    '-s': None}
 
 import argparse, newick3, phylo3, random
 

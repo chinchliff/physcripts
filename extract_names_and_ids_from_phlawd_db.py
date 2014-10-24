@@ -2,10 +2,8 @@
 """Given a set of names, extract some minimal information about those names from a specified PHLAWD database."""
 _title = 'Get information about names from a PHLAWD database'
 _example_args = {
-    '-t': 'test_files/tree_with_50_tips.tre',
-    '-n': 'test_files/names_50.txt',
-    '-b': '0.1',
-    '-s': None}
+    '-d': '~/phylo/data/gbpln_2014_04_25.db', # need to make a small standalone example for this
+    '-n': 'test_files/names_and_synonyms.txt',}
 
 if __name__ == '__main__': # if the script is being executed at the command line
 

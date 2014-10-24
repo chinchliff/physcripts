@@ -46,7 +46,7 @@ script: `add_species_to_chronogram.py`
 
 Adds names from an input file into to a designated tree, while maintaining consistent depths for all affected internal nodes, and ensuring that newly added tips will have depths equal to the depth of their sister clades. In other words, this will maintain the time-relations in the chronogram as new tips are added.
 ```bash
-add_species_to_chronogram.py -d ~/phylo/data/gbpln_2014_04_25.db -n test_files/names_and_synonyms.txt 
+add_species_to_chronogram.py -t test_files/tree_with_50_tips.tre -n test_files/names_50.txt -s -b 0.1 
 ```
 
 
@@ -58,7 +58,7 @@ script: `extract_names_and_ids_from_phlawd_db.py`
 
 Given a set of names, extract some minimal information about those names from a specified PHLAWD database.
 ```bash
-extract_names_and_ids_from_phlawd_db.py -t test_files/tree_with_50_tips.tre -n test_files/names_50.txt -s -b 0.1 
+extract_names_and_ids_from_phlawd_db.py -d ~/phylo/data/gbpln_2014_04_25.db -n test_files/names_and_synonyms.txt 
 ```
 
 
