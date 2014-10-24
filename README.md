@@ -9,8 +9,8 @@ This directory contains a bunch of scripts to automate common (or not so common)
 cd ~/ && git clone https://github.com/chinchliff/physcripts
 
 # add it to paths
-echo 'export PATH=/Users/cody/physcripts:$PATH' >> ~/.bash_profile
-echo 'export PYTHONPATH=/Users/cody/physcripts:$PYTHONPATH' >> ~/.bash_profile
+echo 'export PATH=~/physcripts:$PATH' >> ~/.bash_profile
+echo 'export PYTHONPATH=~/physcripts:$PYTHONPATH' >> ~/.bash_profile
 
 # load new environment variables
 source ~/.bash_profile
