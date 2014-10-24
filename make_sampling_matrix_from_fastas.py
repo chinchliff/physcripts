@@ -13,6 +13,7 @@ in any conventional spreadsheet or text-editor app. This file should be in the p
 Decisivator application.
 
 This script requires BioPython.'''
+_title = "Create a sampling matrix from a set of FASTA files"
 
 if __name__ == "__main__":
 

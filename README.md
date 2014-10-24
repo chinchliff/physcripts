@@ -31,6 +31,10 @@ Below is a (complete) list of the available Python scripts, along with (highly i
 
 [Get information about names from a PHLAWD database](#get-information-about-names-from-a-phlawd-database)
 
+[Create a sampling matrix from a set of FASTA files](#create-a-sampling-matrix-from-a-set-of-fasta-files)
+
+[Run the quartet jackknife ICA support estimation procedure on a tree](#run-the-quartet-jackknife-ica-support-estimation-procedure-on-a-tree)
+
 
 ---
 
@@ -54,6 +58,46 @@ Given a set of names, extract some minimal information about those names from a 
 ```bash
 extract_names_and_ids_from_phlawd_db.py -t test_files/tree_with_50_tips.tre -n test_files/names_50.txt -s -b 0.1 
 ```
+
+
+---
+
+### Create a sampling matrix from a set of FASTA files
+
+script: `make_sampling_matrix_from_fastas.py`
+
+This script accesses a directory, and traverses all FASTA files in it, recording the names of all taxa present
+in each file. Then it creates a tab-delimited file containing a matrix where the rows represent the taxa and the
+columns the FASTA files. The intended use is for a directory containing a set of FASTA files each corresponding
+to a single locus, and containing homologous sequences of that locus for different taxa. The script will record
+a 1 in the resulting matrix if a taxon is present in a locus file, or a 0 if not.
+
+Key point: the script does not intelligently differentiate FASTA files from other types, and it will attempt
+to parse any file in the directory. For this reason, you should remove all other files before you run the script.
+
+It will create (or overwrite!) a file in the passed directory called 'sampling_matrix.txt' that may be opened
+in any conventional spreadsheet or text-editor app. This file should be in the proper format for use in the
+Decisivator application.
+
+This script requires BioPython.
+
+
+---
+
+### Run the quartet jackknife ICA support estimation procedure on a tree
+
+script: `subsample_edge_quartets.py`
+
+Consider each node in the rooted tree to identify a bipartition, which is represented in
+the tree as the outgoing edge connecting the node to its parent. In a fully bifurcating tree,
+each node connected to this edge (the child and the parent) will have two other connected edges.
+If we unroot the tree and consider the outgoing direction to be away from the bipartition of
+interest, then leaf sets descendant from these outgoing edges form the four sets of the quartet
+induced by the bipartition. We perform a number of replicated tests consisting of randomly drawing
+one taxon from each of these four quartets, reconstructing the topology for the four random tips
+using the sequence data with sequence data from the original alignment, and we record the topology
+for each replicate. The resulting topology sets are used to calculate the ICA score for the 
+bipartition.
 
 #### Scripts with less complete documentation:
 
@@ -167,26 +211,6 @@ script: `make_sampling_matrix_from_alignment.py`
 
 ---
 
-script: `make_sampling_matrix_from_fastas.py`
-
-This script accesses a directory, and traverses all FASTA files in it, recording the names of all taxa present
-in each file. Then it creates a tab-delimited file containing a matrix where the rows represent the taxa and the
-columns the FASTA files. The intended use is for a directory containing a set of FASTA files each corresponding
-to a single locus, and containing homologous sequences of that locus for different taxa. The script will record
-a 1 in the resulting matrix if a taxon is present in a locus file, or a 0 if not.
-
-Key point: the script does not intelligently differentiate FASTA files from other types, and it will attempt
-to parse any file in the directory. For this reason, you should remove all other files before you run the script.
-
-It will create (or overwrite!) a file in the passed directory called 'sampling_matrix.txt' that may be opened
-in any conventional spreadsheet or text-editor app. This file should be in the proper format for use in the
-Decisivator application.
-
-This script requires BioPython.
-
-
----
-
 script: `make_tip_list_by_genus.py`
 
 Reads a newick tree with phlawd-style tip names -- <ncbi_id>_<genus>_<spepithet> -- and creates a line-delimited list of the generic names in the tree and their constituent species that is written to outfile. Names are just extracted and parsed with regex search, does not use the tree structure at all.
@@ -263,22 +287,6 @@ Will root a set of newick trees using a line-delimited list of taxon names to be
 ---
 
 script: `strip_node_labels.py`
-
-
----
-
-script: `subsample_edge_quartets.py`
-
-Consider each node in the rooted tree to identify a bipartition, which is represented in
-the tree as the outgoing edge connecting the node to its parent. In a fully bifurcating tree,
-each node connected to this edge (the child and the parent) will have two other connected edges.
-If we unroot the tree and consider the outgoing direction to be away from the bipartition of
-interest, then leaf sets descendant from these outgoing edges form the four sets of the quartet
-induced by the bipartition. We perform a number of replicated tests consisting of randomly drawing
-one taxon from each of these four quartets, reconstructing the topology for the four random tips
-using the sequence data with sequence data from the original alignment, and we record the topology
-for each replicate. The resulting topology sets are used to calculate the ICA score for the 
-bipartition.
 
 
 ---

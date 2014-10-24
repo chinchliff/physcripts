@@ -9,6 +9,7 @@ one taxon from each of these four quartets, reconstructing the topology for the 
 using the sequence data with sequence data from the original alignment, and we record the topology
 for each replicate. The resulting topology sets are used to calculate the ICA score for the 
 bipartition."""
+_title = "Run the quartet jackknife ICA support estimation procedure on a tree" 
 
 import argparse, newick3, os, phylo3, random, shutil, subprocess, sys, time
 from multiprocessing import Lock, Manager, Pool, Queue
