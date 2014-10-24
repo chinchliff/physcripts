@@ -22,7 +22,7 @@ The descriptions below include a variety of example calls to the scripts. The in
 
 ## Scripts
 
-Below is a (complete) list of the available Python scripts, along with (highly incomplete) descriptive documentation about each one. Scripts with more complete documentation are listed before those without it. More information can usually be found in the form of comments within the scripts (in addition, of course, to my optimistically somewhat self-documenting code).
+Below is a (complete) list of the available Python scripts, along with (highly incomplete) descriptive documentation about each one. Scripts with more complete documentation are listed here as links, and their documentation precedes those with less information. More details can usually be found in the form of comments within the scripts (in addition, of course, to my optimistically somewhat self-documenting code).
 
 
 [Add tips to a chronogram](#add-tips-to-a-chronogram)
