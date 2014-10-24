@@ -55,25 +55,39 @@ Given a set of names, extract some minimal information about those names from a 
 extract_names_and_ids_from_phlawd_db.py -t test_files/tree_with_50_tips.tre -n test_files/names_50.txt -s -b 0.1 
 ```
 
-#### Scripts with less complete documentation below here:
+#### Scripts with less complete documentation:
+
+---
 
 script: `clean_gb_names_simple_fasta.py`
 
 
+---
+
 script: `clean_phlawd_spp_tip_names.py`
 
+
+---
 
 script: `excise_knuckles.py`
 
 
+---
+
 script: `extract_names_from_roguenarok_output.py`
 
+
+---
 
 script: `figtree_blocks.py`
 
 
+---
+
 script: `fill_tips_from_taxonomy.py`
 
+
+---
 
 script: `filter_fasta.py`
 
@@ -87,21 +101,31 @@ should be a line-delimited text file containing the names of tips as they
 correspond to those in the fasta alignments.
 
 
+---
+
 script: `filter_list.py`
 
+
+---
 
 script: `filter_phylip.py`
 
 filters a phylip alignment; can accept *either* a set of names to accepted or a set to be excluded, and saves the output to another file
 
 
+---
+
 script: `find_names_missing_from_tree.py`
 
+
+---
 
 script: `fix_gb_names_in_fasta.py`
 
 Cleans the namestrings in fasta files downloaded from ncbi, saving only minimal name information with no special characters. Optionally will use an interactive prompt to allow the user to rename things with names in unrecognized formats
 
+
+---
 
 script: `get_nested_taxa_for_names.py`
 
@@ -109,25 +133,39 @@ uses a phlawd sqlite3 taxonomy database to retrieve all the names associated wit
 in the provided list. <targetrank> specifies the rank of the taxa to be returned.
 
 
+---
+
 script: `make_bootstraps.py`
 
+
+---
 
 script: `make_constraint_tree.py`
 
 
+---
+
 script: `make_partitions_from_pb_settings.py`
 
 
+---
+
 script: `make_random_tree.py`
 
+
+---
 
 script: `make_readme.py`
 
 Generate simple markdown documentation for the scripts in this directory
 
 
+---
+
 script: `make_sampling_matrix_from_alignment.py`
 
+
+---
 
 script: `make_sampling_matrix_from_fastas.py`
 
@@ -147,41 +185,63 @@ Decisivator application.
 This script requires BioPython.
 
 
+---
+
 script: `make_tip_list_by_genus.py`
 
 Reads a newick tree with phlawd-style tip names -- <ncbi_id>_<genus>_<spepithet> -- and creates a line-delimited list of the generic names in the tree and their constituent species that is written to outfile. Names are just extracted and parsed with regex search, does not use the tree structure at all.
 
 
+---
+
 script: `match_taxa_in_fasta.py`
 
 
+---
+
 script: `merge_lists.py`
 
+
+---
 
 script: `newick3.py`
 
 Classes and methods for performing basic operations on Newick trees.
 
 
+---
+
 script: `paint_branches.py`
 
 
+---
+
 script: `phylip2fasta.py`
 
+
+---
 
 script: `phylo3.py`
 
 Classes and methods for performing basic operations on phylogenetic trees.
 
 
+---
+
 script: `print_tip_names.py`
 
+
+---
 
 script: `prune_long_tips.py`
 
 
+---
+
 script: `prune_tips.py`
 
+
+---
 
 script: `root_tree_against_master.py`
 
@@ -193,13 +253,19 @@ Place the root of a target tree in a position determined by the relationships pr
 If this case is satisfied, the target tree will be rooted at Y.
 
 
+---
+
 script: `root_trees.py`
 
 Will root a set of newick trees using a line-delimited list of taxon names to be included in the outgroup.
 
 
+---
+
 script: `strip_node_labels.py`
 
+
+---
 
 script: `subsample_edge_quartets.py`
 
@@ -215,8 +281,12 @@ for each replicate. The resulting topology sets are used to calculate the ICA sc
 bipartition.
 
 
+---
+
 script: `test_monophyly_against_tree.py`
 
+
+---
 
 script: `transpose_fastas.py`
 

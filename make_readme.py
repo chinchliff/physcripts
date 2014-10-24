@@ -51,9 +51,9 @@ if __name__ == '__main__':
             continue
 
         s = StringIO()
+        s.write('\n---\n')
         
         if (hasattr(x, '_title')):
-            s.write('\n---\n')
             s.write('\n### ' + x._title + '\n')
             titles[d] = x._title
     
@@ -88,7 +88,7 @@ if __name__ == '__main__':
         if d in titles:
             print descriptions[d]
 
-    print("#### Scripts with less complete documentation below here:")
+    print("#### Scripts with less complete documentation:")
 
     # write other (incomplete) descriptions    
     for d in scripts:
