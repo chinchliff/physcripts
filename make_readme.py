@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+"""Generate simple markdown documentation for the scripts in this directory"""
+
 from StringIO import StringIO
 
 if __name__ == '__main__':
@@ -6,6 +8,8 @@ if __name__ == '__main__':
     import os
 
     observed = set([])
+
+    print('## Basic documentation\n')
 
     for d in os.listdir('.'):
 
