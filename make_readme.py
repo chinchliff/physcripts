@@ -55,7 +55,7 @@ if __name__ == '__main__':
             s.write('\n### ' + x._title + '\n')
             titles[d] = x._title
     
-        s.write('\n`' + x.__name__ + '`\n')
+        s.write('\nscript: `' + x.__name__ + '.py`\n')
 
         if (x.__doc__ is not None):
             s.write('\n' + x.__doc__ + '\n')
@@ -79,9 +79,9 @@ if __name__ == '__main__':
     # create links to descriptions with titles    
     for d in scripts:
         if d in titles:
-            print('[' + titles[d] + '](#' + re.sub("\s+", "-", titles[d].strip()) + ')')
+            print('* [' + titles[d] + '](#' + re.sub("\s+", "-", titles[d].lower().strip()) + ')\n')
 
-    # write decriptions with titles
+    # write descriptions with titles
     for d in scripts:
         if d in titles:
             print descriptions[d]
