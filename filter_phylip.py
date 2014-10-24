@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-'''filters a phylip alignment; can accept *either* a set of names to accepted or a set to be excluded, and saves the output to another file'''
+"""Filters a phylip alignment; can accept *either* a set of names to accepted or a set to be excluded, and saves the output to another file"""
+_title = 'Filter a phylip alignment'
 
 if __name__ == "__main__":
 
