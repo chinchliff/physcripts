@@ -35,6 +35,8 @@ More details can usually be found in the form of comments within the scripts (in
 
 [Create a sampling matrix from a set of FASTA files](#create-a-sampling-matrix-from-a-set-of-fasta-files)
 
+[Use a rooted superset tree to infer the root position in a subset tree](#use-a-rooted-superset-tree-to-infer-the-root-position-in-a-subset-tree)
+
 [Estimate quartet jackknife ICA support on a tree](#estimate-quartet-jackknife-ica-support-on-a-tree)
 
 
@@ -82,6 +84,20 @@ in any conventional spreadsheet or text-editor app. This file should be in the p
 Decisivator application.
 
 This script requires BioPython.
+
+
+---
+
+### Use a rooted superset tree to infer the root position in a subset tree
+
+script: `root_tree_against_master.py`
+
+Place the root of a target tree in a position determined by the relationships present in a given master tree. The following conditions must be met:
+
+1. The master tree contains all the taxa in the target tree.
+2. Some bipartition X = A|B exists in the master tree such that for some bipartition Y = C|D in the target, C is a subset of A and D is a subset of B
+
+If this case is satisfied, the target tree will be rooted at Y.
 
 
 ---
@@ -259,18 +275,6 @@ script: `prune_long_tips.py`
 ---
 
 script: `prune_tips.py`
-
-
----
-
-script: `root_tree_against_master.py`
-
-Place the root of a target tree in a position determined by the relationships present in a given master tree. The following conditions must be met:
-
-1. The master tree contains all the taxa in the target tree.
-2. Some bipartition X = A|B exists in the master tree such that for some bipartition Y = C|D in the target, C is a subset of A and D is a subset of B
-
-If this case is satisfied, the target tree will be rooted at Y.
 
 
 ---
