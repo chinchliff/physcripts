@@ -51,7 +51,7 @@ What follows is a (complete) list of the available Python scripts, along with (h
         observed.add(d)
         
         if (hasattr(x, '_title')):
-            print('---\n')
+            print('\n---')
             print('\n### ' + x._title)
     
         print('\n`' + x.__name__ + '`')
