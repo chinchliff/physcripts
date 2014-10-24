@@ -23,6 +23,7 @@ echo 'export PYTHONPATH=/Users/cody/physcripts:$PYTHONPATH' >> ~/.bash_profile
 
 # load new environment variables
 source ~/.bash_profile
+```
 
 ## Running examples
 
