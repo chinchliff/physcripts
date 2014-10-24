@@ -1,22 +1,24 @@
 #!/usr/bin/env python
 
-import newick3, os, sys
+if __name__ == '__main__':
 
-if len(sys.argv) < 3:
-    sys.exit("usage: find_names_missing_from_tree.py <datafile> <treefile>")
+    import newick3, os, sys
 
-data_file_name = sys.argv[1]
-tree_file_name = sys.argv[2]
+    if len(sys.argv) < 3:
+        sys.exit("usage: find_names_missing_from_tree.py <datafile> <treefile>")
 
-names = set()
-with open(tree_file_name, "r") as treefile:
-    tree = newick3.parse(treefile.readline())
+    data_file_name = sys.argv[1]
+    tree_file_name = sys.argv[2]
 
-for l in tree.leaves():
-    names.add(l.label)
+    names = set()
+    with open(tree_file_name, "r") as treefile:
+        tree = newick3.parse(treefile.readline())
 
-with open(data_file_name, "r") as datafile:
-    for line in datafile:
-        parts = line.split()
-        if len(parts) > 1 and parts[0] not in names:
-            print parts[0]
+    for l in tree.leaves():
+        names.add(l.label)
+
+    with open(data_file_name, "r") as datafile:
+        for line in datafile:
+            parts = line.split()
+            if len(parts) > 1 and parts[0] not in names:
+                print parts[0]

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-import copy, operator, os, random, re, sys 
-import numpy as np
-
 if __name__ == '__main__':
 
-    if len(sys.argv) < 3:
+    if import copy, operator, os, random, re, sys 
+    import numpy as np
+    
+    len(sys.argv) < 3:
         print """usage: make_bs_alignments.py <alignment.phy> <partfile_raxml_format> [label=<output_label>] [randseed=<n>]"""
         sys.exit(1)
 

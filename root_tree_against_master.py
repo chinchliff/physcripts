@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+"""Place the root of a target tree in a position determined by the relationships present in a given master tree. The following conditions must be met:
+
+1. The master tree contains all the taxa in the target tree.
+2. Some bipartition X = A|B exists in the master tree such that for some bipartition Y = C|D in the target, C is a subset of A and D is a subset of B
+
+If this case is satisfied, the target tree will be rooted at Y."""
 
 import sys, newick3, phylo3
 

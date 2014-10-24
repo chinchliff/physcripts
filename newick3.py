@@ -1,8 +1,9 @@
+"""Classes and methods for performing basic operations on Newick trees.""" 
+
 import string, sys
 from shlex import shlex
 from phylo3 import Node
 import StringIO
-
 
 class Tokenizer(shlex):
     """Provides tokens for parsing Newick-format trees"""

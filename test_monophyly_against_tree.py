@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-import sys, sqlite3, newick3, phylo3
 
 if __name__ == "__main__":
+    
+    import sys, sqlite3, newick3, phylo3
 
     if len(sys.argv) < 5:
 #        print "usage: testmonophylyagainsttree <phlawddb> rank=<rank> [include=\"<tx1>,<tx2>,...\"] " \

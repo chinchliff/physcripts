@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-
-import argparse, newick3, os, phylo3, random, shutil, subprocess, sys, time
-from multiprocessing import Lock, Manager, Pool, Queue
-
-description = """Consider each node in the rooted tree to identify a bipartition, which is represented in
+"""Consider each node in the rooted tree to identify a bipartition, which is represented in
 the tree as the outgoing edge connecting the node to its parent. In a fully bifurcating tree,
 each node connected to this edge (the child and the parent) will have two other connected edges.
 If we unroot the tree and consider the outgoing direction to be away from the bipartition of
@@ -13,6 +9,9 @@ one taxon from each of these four quartets, reconstructing the topology for the 
 using the sequence data with sequence data from the original alignment, and we record the topology
 for each replicate. The resulting topology sets are used to calculate the ICA score for the 
 bipartition."""
+
+import argparse, newick3, os, phylo3, random, shutil, subprocess, sys, time
+from multiprocessing import Lock, Manager, Pool, Queue
 
 DEFAULT_RAXML = "raxmlHPC-AVX"
 SECONDS_PER_MINUTE = 60
@@ -141,7 +140,7 @@ def process_replicate(replicate):
 
 if __name__ == "__main__":
     
-    parser = argparse.ArgumentParser(description=description)
+    parser = argparse.ArgumentParser(description=__doc__)
 
     parser.add_argument("-t", "--tree", type=file, nargs=1, required=True, help="The input tree. Must be rooted and fully bifurcating.")
 

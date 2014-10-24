@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+"""Adds names from a file into to an tree, while maintaining the depths for all affected internal nodes, and ensuring that newly added tips will have depths equal to the depth of their sister clades. In other words, this will maintain the time-relations in the chronogram as new tips are added."""
+_title = 'Add tips to a chronogram'
+_example_args = {
+    '-d': '~/phylo/data/gbpln_2014_04_25.db', # need to make a small standalone example for this
+    '-n': 'test_files/names_and_synonyms.txt',}
 
 import argparse, newick3, phylo3, random
 
@@ -6,8 +11,7 @@ MIN_BRANCH_LENGTH = 0.01
 
 if __name__ == '__main__':
 
-    description = 'add species randomly to an ultrametric chronogram, ' \
-                  'while maintaining ultrametricity.'
+    description = __doc__
 
     parser = argparse.ArgumentParser(description=description)
 

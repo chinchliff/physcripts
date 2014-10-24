@@ -1,12 +1,19 @@
 #!/usr/bin/env python
-
-import argparse, sqlite3
+"""Given a set of names, extract information about those names from the specified PHLAWD database."""
+_title = 'Get information about names from a PHLAWD database'
+_example_args = {
+    '-t': 'test_files/tree_with_50_tips.tre',
+    '-n': 'test_files/names_50.txt',
+    '-b': '0.1',
+    '-s': None}
 
 if __name__ == '__main__': # if the script is being executed at the command line
 
+    import argparse, sqlite3
+
     # define command line arguments using the argparse module,
     # which will simplify a lot of annoying work for us
-    description = 'extract names and ids from a phlawd database'
+    description = __doc__
 
     parser = argparse.ArgumentParser(description=description)
 

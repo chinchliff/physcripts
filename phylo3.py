@@ -1,6 +1,7 @@
+"""Classes and methods for performing basic operations on phylogenetic trees."""
+
 from copy import deepcopy as copy
 
-#import sets
 PREORDER = -99999; POSTORDER = 123456
 BRANCHLENGTH = 0; INTERNODES = 1
 
