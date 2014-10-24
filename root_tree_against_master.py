@@ -5,7 +5,7 @@
 2. Some bipartition X = A|B exists in the master tree such that for some bipartition Y = C|D in the target, C is a subset of A and D is a subset of B
 
 If this case is satisfied, the target tree will be rooted at Y."""
-_title = "Use a superset tree to infer the root position in a subset tree"
+_title = "Root a tree using a reference tree"
 
 import sys, newick3, phylo3
 
