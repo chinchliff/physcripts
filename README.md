@@ -16,9 +16,13 @@ source ~/.bash_profile
 
 ## Running examples
 
-Example input files (referred to in examples below) are included in the `test_files` directory, and the example script calls are written to be run from within the physcripts directory. To run the examples (using the example inputs) outside of that directory, you'll need to edit the calls to indicate the correct path to the example input files. 
+The descriptions below include a variety of example calls to the scripts. The input files used in these examples are included in the `test_files` directory. The example calls are intended to be run from within the physcripts directory, but you can run the elsewhere by if you modify the calls to indicate the correct path to the example input files.
 
-```
+## Scripts
+
+What follows is a (complete) list of the available Python scripts, along with (highly incomplete) descriptive documentation about each one. More information can usually be found in the form of comments within the scripts (in addition, of course, to the hopefully somewhat self-documenting code itself).
+
+
 
 ### Add tips to a chronogram
 
