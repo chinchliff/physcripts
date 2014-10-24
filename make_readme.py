@@ -29,17 +29,18 @@ if __name__ == '__main__':
         if (hasattr(x, '_title')):
             print('\n### ' + x._title)
     
-        print('\n```' + x.__name__ + '```')
+        print('\n`' + x.__name__ + '`')
 
         if (x.__doc__ is not None):
             print('\n' + x.__doc__)
             
         if (hasattr(x, '_example_args')):
-            print('')
+            print('```bash\n')
             s = StringIO()
             s.write(d + '.py ')
             for k, v in x._example_args.items():
                 s.write(k + ' ')
                 if v is not None:
-                    s.write(v + ' ')                
+                    s.write(v + ' ')
+            s.write('\n```')                
             print s.getvalue()            

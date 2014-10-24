@@ -3,33 +3,37 @@
 
 ### Add tips to a chronogram
 
-```add_species_to_chronogram```
+`add_species_to_chronogram`
 
 Adds names from a file into to an tree, while maintaining the depths for all affected internal nodes, and ensuring that newly added tips will have depths equal to the depth of their sister clades. In other words, this will maintain the time-relations in the chronogram as new tips are added.
+```bash
 
 add_species_to_chronogram.py -d ~/phylo/data/gbpln_2014_04_25.db -n test_files/names_and_synonyms.txt 
+```
 
-```clean_gb_names_simple_fasta```
+`clean_gb_names_simple_fasta`
 
-```clean_phlawd_spp_tip_names```
+`clean_phlawd_spp_tip_names`
 
-```excise_knuckles```
+`excise_knuckles`
 
 ### Get information about names from a PHLAWD database
 
-```extract_names_and_ids_from_phlawd_db```
+`extract_names_and_ids_from_phlawd_db`
 
 Given a set of names, extract information about those names from the specified PHLAWD database.
+```bash
 
 extract_names_and_ids_from_phlawd_db.py -t test_files/tree_with_50_tips.tre -n test_files/names_50.txt -s -b 0.1 
+```
 
-```extract_names_from_roguenarok_output```
+`extract_names_from_roguenarok_output`
 
-```figtree_blocks```
+`figtree_blocks`
 
-```fill_tips_from_taxonomy```
+`fill_tips_from_taxonomy`
 
-```filter_fasta```
+`filter_fasta`
 
 Usage:
 
@@ -40,38 +44,38 @@ in the input dir, so the input dir should contain only fasta files. The taxon li
 should be a line-delimited text file containing the names of tips as they
 correspond to those in the fasta alignments.
 
-```filter_list```
+`filter_list`
 
-```filter_phylip```
+`filter_phylip`
 
 filters a phylip alignment; can accept *either* a set of names to accepted or a set to be excluded, and saves the output to another file
 
-```find_names_missing_from_tree```
+`find_names_missing_from_tree`
 
-```fix_gb_names_in_fasta```
+`fix_gb_names_in_fasta`
 
 Cleans the namestrings in fasta files downloaded from ncbi, saving only minimal name information with no special characters. Optionally will use an interactive prompt to allow the user to rename things with names in unrecognized formats
 
-```get_nested_taxa_for_names```
+`get_nested_taxa_for_names`
 
 uses a phlawd sqlite3 taxonomy database to retrieve all the names associated with each taxon 
 in the provided list. <targetrank> specifies the rank of the taxa to be returned.
 
-```make_bootstraps```
+`make_bootstraps`
 
-```make_constraint_tree```
+`make_constraint_tree`
 
-```make_partitions_from_pb_settings```
+`make_partitions_from_pb_settings`
 
-```make_random_tree```
+`make_random_tree`
 
-```make_readme```
+`make_readme`
 
 Generate simple markdown documentation for the scripts in this directory
 
-```make_sampling_matrix_from_alignment```
+`make_sampling_matrix_from_alignment`
 
-```make_sampling_matrix_from_fastas```
+`make_sampling_matrix_from_fastas`
 
 This script accesses a directory, and traverses all FASTA files in it, recording the names of all taxa present
 in each file. Then it creates a tab-delimited file containing a matrix where the rows represent the taxa and the
@@ -88,35 +92,35 @@ Decisivator application.
 
 This script requires BioPython.
 
-```make_tip_list_by_genus```
+`make_tip_list_by_genus`
 
 Reads a newick tree with phlawd-style tip names -- <ncbi_id>_<genus>_<spepithet> -- and creates a line-delimited list of the generic names in the tree and their constituent species that is written to outfile. Names are just extracted and parsed with regex search, does not use the tree structure at all.
 
-```match_taxa_in_fasta```
+`match_taxa_in_fasta`
 
-```merge_lists```
+`merge_lists`
 
-```newick3```
+`newick3`
 
 Classes and methods for performing basic operations on Newick trees.
 usage: nexus2fasta_dirty <nexusfile> <fastaoutputfilename>
 usage: nexus2fasta_dirty <nexusfile> <fastaoutputfilename>
 
-```paint_branches```
+`paint_branches`
 
-```phylip2fasta```
+`phylip2fasta`
 
-```phylo3```
+`phylo3`
 
 Classes and methods for performing basic operations on phylogenetic trees.
 
-```print_tip_names```
+`print_tip_names`
 
-```prune_long_tips```
+`prune_long_tips`
 
-```prune_tips```
+`prune_tips`
 
-```root_tree_against_master```
+`root_tree_against_master`
 
 Place the root of a target tree in a position determined by the relationships present in a given master tree. The following conditions must be met:
 
@@ -125,13 +129,13 @@ Place the root of a target tree in a position determined by the relationships pr
 
 If this case is satisfied, the target tree will be rooted at Y.
 
-```root_trees```
+`root_trees`
 
 Will root a set of newick trees using a line-delimited list of taxon names to be included in the outgroup.
 
-```strip_node_labels```
+`strip_node_labels`
 
-```subsample_edge_quartets```
+`subsample_edge_quartets`
 
 Consider each node in the rooted tree to identify a bipartition, which is represented in
 the tree as the outgoing edge connecting the node to its parent. In a fully bifurcating tree,
@@ -144,9 +148,9 @@ using the sequence data with sequence data from the original alignment, and we r
 for each replicate. The resulting topology sets are used to calculate the ICA score for the 
 bipartition.
 
-```test_monophyly_against_tree```
+`test_monophyly_against_tree`
 
-```transpose_fastas```
+`transpose_fastas`
 
 transpose_fastas.py
 version 0.1
