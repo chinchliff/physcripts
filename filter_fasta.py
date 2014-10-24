@@ -3,7 +3,6 @@
 in the input dir, so the input dir should contain only fasta files. The taxon list
 should be a line-delimited text file containing the names of tips as they
 correspond to those in the fasta alignments."""
-_title = "Filter a FASTA alignment"
 
 import sys
 import os

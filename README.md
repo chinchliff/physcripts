@@ -33,8 +33,6 @@ More details can usually be found in the form of comments within the scripts (in
 
 [Get information about names from a PHLAWD database](#get-information-about-names-from-a-phlawd-database)
 
-[Filter a FASTA alignment](#filter-a-fasta-alignment)
-
 [Filter a phylip alignment](#filter-a-phylip-alignment)
 
 [Create a sampling matrix from a set of FASTA files](#create-a-sampling-matrix-from-a-set-of-fasta-files)
@@ -66,18 +64,6 @@ Given a set of names, extract some minimal information about those names from a 
 ```bash
 ./extract_names_and_ids_from_phlawd_db.py -d ~/phylo/data/gbpln_2014_04_25.db -n test_files/names_and_synonyms.txt 
 ```
-
-
----
-
-### Filter a FASTA alignment
-
-script: `filter_fasta.py`
-
-Input files are expected to be in fasta format. The script will traverse all files
-in the input dir, so the input dir should contain only fasta files. The taxon list
-should be a line-delimited text file containing the names of tips as they
-correspond to those in the fasta alignments.
 
 
 ---
@@ -166,6 +152,16 @@ script: `figtree_blocks.py`
 ---
 
 script: `fill_tips_from_taxonomy.py`
+
+
+---
+
+script: `filter_fasta.py`
+
+Input files are expected to be in fasta format. The script will traverse all files
+in the input dir, so the input dir should contain only fasta files. The taxon list
+should be a line-delimited text file containing the names of tips as they
+correspond to those in the fasta alignments.
 
 
 ---
