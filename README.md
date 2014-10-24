@@ -23,6 +23,7 @@ The descriptions below include a variety of example calls to the scripts. The in
 What follows is a (complete) list of the available Python scripts, along with (highly incomplete) descriptive documentation about each one. More information can usually be found in the form of comments within the scripts (in addition, of course, to the hopefully somewhat self-documenting code itself).
 
 
+---
 
 ### Add tips to a chronogram
 
@@ -39,6 +40,7 @@ add_species_to_chronogram.py -d ~/phylo/data/gbpln_2014_04_25.db -n test_files/n
 `clean_phlawd_spp_tip_names`
 
 `excise_knuckles`
+---
 
 ### Get information about names from a PHLAWD database
 
