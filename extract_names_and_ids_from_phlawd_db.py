@@ -38,17 +38,17 @@ if __name__ == '__main__': # if the script is being executed at the command line
     names = [l.strip() for l in args.names[0]]
 
     # write the header line for the output
-    print 'accepted_name,input_name,name_class,ncbi_id'
+    print 'input_name,accepted_name,name_class,ncbi_id'
     
     # initialize a dictionary to remember accepted names for ids so we only have to
     # look up the accepted name for each id once
     accepted_names_by_ncbi_id = {}
     
-    for n in names:
+    for input_name in names:
         
         # query the database using this name. the 'execute' method will replace the '?'
         # characters in the base_query with the values from the data tuple (in order)
-        data = (n,)
+        data = (input_name,)
         r = c.execute('SELECT name_class, ncbi_id FROM taxonomy '
                       'WHERE name == ?', data)
         
@@ -83,7 +83,7 @@ if __name__ == '__main__': # if the script is being executed at the command line
                 accepted_names_by_ncbi_id[id] = accepted_name
             
             # add the search name and the accepted name to the results
-            row = (n, accepted_names_by_ncbi_id[id]) + row         
+            row = (input_name, accepted_names_by_ncbi_id[id]) + row         
             
             # print this result row to the screen, as a comma-separated list of string
             # representations of its elements
