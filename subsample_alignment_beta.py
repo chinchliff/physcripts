@@ -2,24 +2,26 @@
 
 if __name__ == '__main__':
 
-    if import copy, operator, os, random, re, sys 
+    import copy, operator, os, random, re, sys 
     import numpy as np
     
-    len(sys.argv) < 3:
-        print """usage: make_bs_alignments.py <alignment.phy> <partfile_raxml_format> [label=<output_label>] [randseed=<n>]"""
+    if len(sys.argv) < 2:
+        print """usage: make_bs_alignments.py <alignment.phy> [partfile=<partfile_raxml_format>] [label=<output_label>] [randseed=<n>]"""
         sys.exit(1)
 
     aln_filename = sys.argv[1]
-    part_filename = sys.argv[2]
 
     randseed = None
     output_label = None
+    part_filename = None
     if len(sys.argv) > 3:
         for argname, val in [(a[0].strip(), a[1].strip()) for a in [arg.split("=") for arg in sys.argv[3:]]]:
             if argname == 'randseed':
                 randseed = int(val)
             elif argname == 'label':
                 output_label = argval
+            elif argname == 'partfile':
+                part_filename = argval
 
     if randseed == None:
         random.seed()
@@ -30,17 +32,19 @@ if __name__ == '__main__':
         output_label = aln_filename.rsplit('.',1)[0]  
 
     # map the partitions to a dict
-    parts = {}
-    part_file = open(part_filename,'rb')
-    for line in part_file:
-        toks = [t.strip() for t in re.split(r'[,=]+',line)]
-        ptype = toks[0]
-        name = toks[1]
-        bounds = [b.strip() for b in toks[2].split("-")]
-        start = int(bounds[0])
-        end = int(bounds[1])
-        parts[start] = { 'name': name, 'type': ptype, 'start': start, 'end': end, 'taxa_sampled': 0, 'data': {}, }
-    part_starts = sorted(parts.keys())
+    parts = None
+    if part_filename is not None:
+        parts = {}
+        part_file = open(part_filename,'rb')
+        for line in part_file:
+            toks = [t.strip() for t in re.split(r'[,=]+',line)]
+            ptype = toks[0]
+            name = toks[1]
+            bounds = [b.strip() for b in toks[2].split("-")]
+            start = int(bounds[0])
+            end = int(bounds[1])
+            parts[start] = { 'name': name, 'type': ptype, 'start': start, 'end': end, 'taxa_sampled': 0, 'data': {}, }
+        part_starts = sorted(parts.keys())
 
     # read in the alignment, recording the taxon names in a separate dict
     taxa = {}
@@ -56,9 +60,12 @@ if __name__ == '__main__':
                 ntax = toks[0]
                 ncols = toks[1]
                 print ntax, ncols
+                if parts is None:
+                    parts = {1: { 'name': 'all', 'type': 'DNA', 'start': 1, 'end': int(ncols), 'taxa_sampled': 0, 'data': {}, }}
+                    part_starts = [1,]
             else:
                 name, seq = toks
-                taxa[name] = { 'parts_sampled': 0, }
+                taxa[name] = {'parts_sampled': 0}
                 for s in part_starts:
                     e = parts[s]['end']
                     parts[s]['data'][name] = seq[s-1:e]
