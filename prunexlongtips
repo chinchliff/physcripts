@@ -3,7 +3,7 @@
 import newick3, phylo3, numpy, sys
 
 if len(sys.argv) < 3:
-    print "usage: remove_badtips.py <treefile> <maxdevfactor> [keep=\"<tax1, tax2, ...>\"]"
+    print "usage: prunexlongtips.py <treefile> <maxdevfactor> [keep=\"<tax1, tax2, ...>\"]"
     sys.exit()
 
 treefname = sys.argv[1]
