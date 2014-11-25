@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-transpose_fastas.py
+"""transpose_fastas.py
 version 0.1
 cody hinchliff
 2012.7.21
@@ -12,13 +11,13 @@ with this sequence id, labeled with ids representing the original fasta files wh
 	
 For example, if the script is passed a directory containing fasta files corresponding to loci, containing sequences
 labeled with taxon names, the inverted directory will contain fasta files corresponding to taxon names, containing
-sequences labeled with locus names (drawn from the filenames of the original fastas).
-"""
-
-import sys
-import os
+sequences labeled with locus names (drawn from the filenames of the original fastas)."""
 
 if __name__ == "__main__":
+    
+    import sys
+    import os
+    
     # if called for a target outside the cwd, get a path to the target dir
     cwd = os.getcwd() + os.sep
     try:

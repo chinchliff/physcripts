@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import sys
-
 if __name__ == "__main__":
 
+    import sys
+    
     if len(sys.argv) < 2:
         print "usage: makesamplingmatrixfromalignment <phylipaln>"
         sys.exit(0)

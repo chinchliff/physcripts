@@ -1,16 +1,13 @@
 #!/usr/bin/env python
-
-import phylo3, newick3
-import sys
-
-desc = """
-Will root a set of newick trees using a line-delimited list of taxon names to be included in the outgroup.
-"""
+"""Will root a set of newick trees using a line-delimited list of taxon names to be included in the outgroup."""
 
 if __name__ == "__main__":
 
+    import phylo3, newick3
+    import sys
+
     if len(sys.argv) < 3:
-        print desc
+        print __doc__
         print "usage: roottrees <treesfile> <outgroupsfile>"
         sys.exit(0)
 

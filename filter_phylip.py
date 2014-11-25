@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-
-import os
-import sys
-
-"""filters a phylip alignment; can accept *either* a set of names to accepted or a set to be excluded, and saves the output to another file""" 
+"""Filters a phylip alignment; can accept *either* a set of names to accepted or a set to be excluded, and saves the output to another file"""
+_title = 'Filter a phylip alignment'
 
 if __name__ == "__main__":
+
+    import os
+    import sys
 
     if len(sys.argv) < 4:
         print "usage: filter_phylip.py <infile> [excluded=<excludedtaxafile> | accepted=<acceptednamesfile>] <outfile>"
@@ -38,12 +38,10 @@ if __name__ == "__main__":
 
         if listtype == "excluded":
             if name in names:
-#                ntax -= 1
                 continue
 
         elif listtype == "accepted":
             if name not in names:
-#                ntax += 1
                 continue
 
         saved.append(name + " " + seq + "\n")

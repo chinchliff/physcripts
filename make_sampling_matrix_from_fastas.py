@@ -1,11 +1,5 @@
 #!/usr/bin/env python
-"""
-makesamplingmatrixfastas.py
-version 0.1
-cody hinchliff
-2011.3.30
-
-This script accesses a directory, and traverses all FASTA files in it, recording the names of all taxa present
+'''This script accesses a directory, and traverses all FASTA files in it, recording the names of all taxa present
 in each file. Then it creates a tab-delimited file containing a matrix where the rows represent the taxa and the
 columns the FASTA files. The intended use is for a directory containing a set of FASTA files each corresponding
 to a single locus, and containing homologous sequences of that locus for different taxa. The script will record
@@ -18,15 +12,15 @@ It will create (or overwrite!) a file in the passed directory called 'sampling_m
 in any conventional spreadsheet or text-editor app. This file should be in the proper format for use in the
 Decisivator application.
 
-This script requires BioPython to be installed.
-
-"""
-
-import sys
-import os
-from Bio import SeqIO
+This script requires BioPython.'''
+_title = "Create a sampling matrix from a set of FASTA files"
 
 if __name__ == "__main__":
+
+    import sys
+    import os
+    from Bio import SeqIO
+
     cwd = os.getcwd() + os.sep
 
     if len(sys.argv) < 2:

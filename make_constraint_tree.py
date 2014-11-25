@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import sys
-import os
-import re
-
 if __name__ == "__main__":
+
+    import sys
+    import os
+    import re
     
     if len(sys.argv) < 4:
         print "usage: make_constraint_tree.py <starttreefile> <tipsetsfile> <outfile>"

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-import sys,os,png
-import newick3,phylo3
+import newick3, os, phylo3, png, sys
 
 size_scalar = 4
 breakup = 8
 
 if __name__ == "__main__":
+
     if len(sys.argv) != 4:
         print "usage: make_matrix_fig.py infile.csv infile.tre outfile.png"
         sys.exit(0)

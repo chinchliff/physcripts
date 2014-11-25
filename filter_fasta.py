@@ -1,17 +1,11 @@
 #!/usr/bin/env python
-
-import sys
-import os
-
-"""
-Usage:
-
-./filter_fasta.py <path to input dir> <path to accepted taxon list>
-
-Input files are expected to be in fasta format. The script will traverse all files
+"""Input files are expected to be in fasta format. The script will traverse all files
 in the input dir, so the input dir should contain only fasta files. The taxon list
 should be a line-delimited text file containing the names of tips as they
 correspond to those in the fasta alignments."""
+
+import sys
+import os
 
 def filter(ifname, taxa_approved):  #, ofname, taxa_approved):
 

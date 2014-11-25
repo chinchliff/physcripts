@@ -1,15 +1,12 @@
 #!/usr/bin/env python
+'''Reads a newick tree with phlawd-style tip names -- <ncbi_id>_<genus>_<spepithet> -- and creates a line-delimited list of the generic names in the tree and their constituent species that is written to outfile. Names are just extracted and parsed with regex search, does not use the tree structure at all.'''
 
-import sys
-import os
-import re
+if __name__ == '__main__':
 
-"""Reads a newick tree with phlawd-style tip names -- <ncbi_id>_<genus>_<spepithet> -- and creates a line-delimited list
-of the generic names in the tree and their constituent species that is written to outfile. Names are just extracted and
-parsed with regex search, does not use the tree structure at all."""
+    import sys
+    import os
+    import re
 
-if __name__ == "__main__":
-    
     if len(sys.argv) < 3:
         print "usage: makegenustiplist.py <treefile> <outfile>"
         sys.exit(0)
@@ -20,7 +17,7 @@ if __name__ == "__main__":
     genus_lists = dict()
     for species_name in taxnames:
         genus_name = species_name.split("_")[1]
-        
+    
         if genus_name not in genus_lists.keys():
             genus_lists[genus_name] = list()
 

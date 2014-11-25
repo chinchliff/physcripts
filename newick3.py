@@ -1,8 +1,9 @@
+"""Classes and methods for performing basic operations on Newick trees.""" 
+
 import string, sys
 from shlex import shlex
 from phylo3 import Node
 import StringIO
-
 
 class Tokenizer(shlex):
     """Provides tokens for parsing Newick-format trees"""
@@ -126,30 +127,24 @@ def traverse(node):
 def to_string(node, length_fmt=":%s", use_node_labels=True, use_branch_lengths=True):
 
     if node.istip:
-        node_str = "%s" % node.label
+        node_str = "'%s'" % node.label
 
     else:
-        node_label = ""
+        node_label = ''
         if use_node_labels and node.label != None:
             node_label = node.label
 
         node_str = "(%s)%s" % \
-                   (",".join([ to_string(child, length_fmt, use_node_labels, use_branch_lengths) \
+                   (','.join([ to_string(child, length_fmt, use_node_labels, use_branch_lengths) \
                                for child in node.children ]), node_label)
 
-#    print("TEST1" + str(node.length))
-
-    if use_branch_lengths and node.length is not None and node.length != "":
+    if use_branch_lengths and node.length is not None and node.length != '':
         length_str = length_fmt % node.length
-        #length_str = ':%f' % node.length
-        #length_str = str(length_str)
     else:
-        length_str = ""
+        length_str = ''
     
-#    if use_branch_lengths:
     node_str = "%s%s" % (node_str, length_str)
 
-#    print("TEST2" + str(node.length) + " " + length_str)
     return node_str
 
 tostring = to_string

@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 
+"""Cleans the namestrings in fasta files downloaded from ncbi, saving only minimal name information with no special characters. Optionally will use an interactive prompt to allow the user to rename things with names in unrecognized formats"""
+
 import re
 import string
 import sys
-
-"""
-Cleans the namestrings in fasta files downloaded from ncbi, saving only minimal name information with no special characters.
-
-Optionally will use an interactive prompt to allow the user to rename things with names in unrecognized formats"""
 
 def clear_screen():
 	"""Clear screen, return cursor to top left"""

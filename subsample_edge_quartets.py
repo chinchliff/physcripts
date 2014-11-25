@@ -1,18 +1,13 @@
 #!/usr/bin/env python
+"""Consider each node N in the rooted tree to identify a bipartition X, which is represented in
+the tree as the outgoing edge connecting N to its parent M. In a fully bifurcating tree, the nodes N and M will each have two other connected edges, which connect the nodes A and B to N, and C and D to M. If we unroot the tree, then the bipartition X can be written as X = \{A,B\}|\{C,D\}, and the branch represented by X in the rooted tree can be represented as the internal branch in a four-tip unrooted topology with tips T = \{A, B, C, D\}, with an internal branch representing X, and each tip t_i in T corresponding to a set of leaves S_i in the original tree.
+
+We may then perform a number of replicated topology searches consisting of randomly drawing one leaf s_j from each S_i, reconstructing the topology for the four random tips using the sequence data from the original alignment, and recording the topology for each replicate. Each such topology replicate must either contain an internal branch that is consistent with X (thus the tips from A and B are on one side of the internal branch, and those from C and D are on the other), or else contain an internal branch that is in conflict with X (A and B are on different sides of the internal branch). To assess the support for bipartition X in the original tree, we summarize the quartet topology replicates, and calculate the ICA score for the internal branch that is consistent with X."""
+
+_title = "Estimate quartet jackknife ICA support on a tree" 
 
 import argparse, newick3, os, phylo3, random, shutil, subprocess, sys, time
 from multiprocessing import Lock, Manager, Pool, Queue
-
-description = """Consider each node in the rooted tree to identify a bipartition, which is represented in
-the tree as the outgoing edge connecting the node to its parent. In a fully bifurcating tree,
-each node connected to this edge (the child and the parent) will have two other connected edges.
-If we unroot the tree and consider the outgoing direction to be away from the bipartition of
-interest, then leaf sets descendant from these outgoing edges form the four sets of the quartet
-induced by the bipartition. We perform a number of replicated tests consisting of randomly drawing
-one taxon from each of these four quartets, reconstructing the topology for the four random tips
-using the sequence data with sequence data from the original alignment, and we record the topology
-for each replicate. The resulting topology sets are used to calculate the ICA score for the 
-bipartition."""
 
 DEFAULT_RAXML = "raxmlHPC-AVX"
 SECONDS_PER_MINUTE = 60
@@ -141,7 +136,7 @@ def process_replicate(replicate):
 
 if __name__ == "__main__":
     
-    parser = argparse.ArgumentParser(description=description)
+    parser = argparse.ArgumentParser(description=__doc__)
 
     parser.add_argument("-t", "--tree", type=file, nargs=1, required=True, help="The input tree. Must be rooted and fully bifurcating.")
 
