@@ -53,6 +53,8 @@ if __name__ == '__main__':
     aln_file = open(aln_filename,"rb")
     on_first_line = True
     for line in aln_file:
+        if len(line.strip()) < 3:
+            continue
         toks = [l.strip() for l in line.split()]
         if len(toks) > 1:
             if on_first_line == True:

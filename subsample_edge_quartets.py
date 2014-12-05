@@ -312,8 +312,8 @@ if __name__ == "__main__":
                     est_remaining_time_units = "seconds"
                     est_remaining_time_scalar = 1
                 
-                time_string = " | average node time {:.2} {}".format(mean_time_secs / mean_time_scalar, mean_time_units) + \
-                    " | est. remaining time {:.2f} {}".format(est_remaining_time_secs / est_remaining_time_scalar, est_remaining_time_units)
+                time_string = " | average node time {0:.2f} {1:s}".format(mean_time_secs / mean_time_scalar, mean_time_units) + \
+                    " | est. remaining time {0:.2f} {1:s}".format(est_remaining_time_secs / est_remaining_time_scalar, est_remaining_time_units)
             else:
                 time_string = ""
             print("\nprocessing node " + str(k) + time_string)
@@ -452,7 +452,8 @@ if __name__ == "__main__":
         # now designate multiprocessing resource pool.
         # important to do this outside the node loop as regular garbage collecting does not seem
         # to apply to the threads! also, set maxtasksperchild to release memory and files!
-        pool = Pool(processes=nprocs, maxtasksperchild=1)
+####        pool = Pool(processes=nprocs, maxtasksperchild=1) # only in python 2.7
+        pool = Pool(processes=nprocs)
         pool.map(process_replicate, replicates)
         pool.close()
         pool.join()
@@ -621,4 +622,4 @@ if __name__ == "__main__":
     
     print("\ndone.\nscores written to: " + score_result_file_path + \
         "\nlabeled tree written to: " + tree_result_file_path + \
-        "\ntotal time {:.2f}".format((time.time() - starttime) / 60 / 60) + " hours")
+        "\ntotal time {0:.2f}".format((time.time() - starttime) / 60 / 60) + " hours")
