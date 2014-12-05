@@ -2,10 +2,10 @@
 
 if __name__ == '__main__':
 
-    if import copy, operator, os, random, re, sys 
+    import copy, operator, os, random, re, sys 
     import numpy as np
     
-    len(sys.argv) < 3:
+    if len(sys.argv) < 3:
         print """usage: make_bs_alignments.py <alignment.phy> <partfile_raxml_format> [label=<output_label>] [randseed=<n>]"""
         sys.exit(1)
 
@@ -57,13 +57,14 @@ if __name__ == '__main__':
                 ncols = toks[1]
                 print ntax, ncols
             else:
-                name, seq = toks
+                name = toks[0]
+                seq = toks[1]
                 taxa[name] = { 'parts_sampled': 0, }
                 for s in part_starts:
                     e = parts[s]['end']
                     parts[s]['data'][name] = seq[s-1:e]
         else:
-            raise IndexError("too many items on line '" + line + "' in alignment") 
+            raise IndexError("too many items on line '" + line + "' in alignment")
 
     # assign sampling probs for loci from beta distribution a=3, b=5.
     # chance of drawing a sampling prob 0.1 < S < 0.71 is 95%
