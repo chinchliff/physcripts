@@ -17,7 +17,7 @@ class Tokenizer(shlex):
         comment = ""
         while 1:
             token = self.get_token()
-	    comment += token
+            comment += token
             if token == '':
                 sys.stdout.write('EOF encountered mid-comment!\n')
                 break
@@ -68,7 +68,6 @@ def parse(indata, ttable=None):
             node = node.parent
             
         elif token == ',':
-##             if lp == rp:
             node = node.parent
             
         # branch length
@@ -91,6 +90,8 @@ def parse(indata, ttable=None):
 
         # leaf node or internal node label
         else:
+            if token == "'":
+                continue
             if prev_tok != ')': # leaf node
                 if ttable:
                     ttoken = ttable.get(token) or ttable.get(int(token))
@@ -127,7 +128,7 @@ def traverse(node):
 def to_string(node, length_fmt=":%s", use_node_labels=True, use_branch_lengths=True):
 
     if node.istip:
-        node_str = "'%s'" % node.label
+        node_str = "%s" % node.label
 
     else:
         node_label = ''

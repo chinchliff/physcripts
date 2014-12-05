@@ -10,6 +10,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     aln_filename = sys.argv[1]
+    part_filename = sys.argv[2]
 
     randseed = None
     output_label = None
@@ -66,7 +67,8 @@ if __name__ == '__main__':
                     parts = {1: { 'name': 'all', 'type': 'DNA', 'start': 1, 'end': int(ncols), 'taxa_sampled': 0, 'data': {}, }}
                     part_starts = [1,]
             else:
-                name, seq = toks
+                name = toks[0]
+                seq = toks[1]
                 taxa[name] = {'parts_sampled': 0}
                 for s in part_starts:
                     e = parts[s]['end']
