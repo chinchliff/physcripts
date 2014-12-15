@@ -161,7 +161,7 @@ class Subsample():
                 s.write('\n')
 
         with open(self.output_label + '.phy', 'w') as a:
-            a.write('{} {}\n'.format(self.alignment.ntaxa(), self.alignment.ncols))
+            a.write('{0} {1}\n'.format(self.alignment.ntaxa(), self.alignment.ncols))
             for t in self.taxa_sorted():
                 a.write(t + ' ')
                 for p in self.parts_sorted():
