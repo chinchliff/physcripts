@@ -49,14 +49,14 @@ def process_replicate(replicate):
     temp_ml_search_label = "temp_tree_search." + unique_label
 
     seqs = {}
-    for subtree_name, subtree_seqs in all_seqs.iteritems():
-        for i, s in subtree_seqs.iteritems():
+    for subtree_name, subtree_seqs in all_seqs.items():
+        for i, s in subtree_seqs.items():
             seqs[subtree_name+"_"+str(i)] = s
 
     # write the alignment
     with open(temp_aln_fname,"w") as outfile:
-        outfile.write(str(len(seqs)) + " " + str(len(seqs[seqs.keys()[0]])) + "\n")
-        for l, s in seqs.iteritems():
+        outfile.write(str(len(seqs)) + " " + str(len(seqs[list(seqs.keys())[0]])) + "\n")
+        for l, s in seqs.items():
             outfile.write(l + " " + s + "\n")
     
     # test alignment readability by raxml, also filters entirely missing columns
@@ -72,10 +72,10 @@ def process_replicate(replicate):
         raxml_args += ["-q", temp_part_fname]
 
     p = subprocess.Popen(raxml_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    res = p.communicate()[0]
+    res = str(p.communicate()[0])
     identical_seqs = {}
     if res != None:
-#        print res
+#        print(res)
         for line in res.split("\n"):
             if line.find("IMPORTANT WARNING:") >= 0:
                 parts = line.split()
@@ -89,7 +89,7 @@ def process_replicate(replicate):
                     identical_seqs[n1] = set()
                 identical_seqs[n1].add(n2)
 
-#    print identical_seqs
+#    print(identical_seqs)
     result["identical"] = {}
     for r in identical_seqs.keys():
         result["identical"][r] = set()
@@ -98,7 +98,7 @@ def process_replicate(replicate):
             if m in identical_seqs:
                 result["identical"][r].update(identical_seqs[m])
     
-#    print result["identical"]
+#    print(result["identical"])
 #    exit()
     
     if os.path.exists(temp_aln_fname + ".reduced"):
@@ -138,9 +138,9 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description=__doc__)
 
-    parser.add_argument("-t", "--tree", type=file, nargs=1, required=True, help="The input tree. Must be rooted and fully bifurcating.")
+    parser.add_argument("-t", "--tree", type=open, nargs=1, required=True, help="The input tree. Must be rooted and fully bifurcating.")
 
-    parser.add_argument("-n", "--alignment", type=file, nargs=1, required=True, help="Alignment file in \"relaxed phylip\" format, as used by RAxML.")
+    parser.add_argument("-n", "--alignment", type=open, nargs=1, required=True, help="Alignment file in \"relaxed phylip\" format, as used by RAxML.")
 
     parser.add_argument("-#", "--number-of-reps", type=int, nargs=1, required=True, help="The number of replicate quartet topology searches to be performed at each node.")
 
@@ -179,10 +179,10 @@ if __name__ == "__main__":
     if not os.path.exists(temp_wd):
         os.mkdir(temp_wd)
 
-    topology_dir = args.topology_sets_dir[0] if args.topology_sets_dir != None else temp_wd + "/topology_sets"
-    if os.path.exists(topology_dir):
-        shutil.rmtree(topology_dir)
-    os.mkdir(topology_dir)
+#    topology_dir = args.topology_sets_dir[0] if args.topology_sets_dir != None else temp_wd + "/topology_sets"
+#    if os.path.exists(topology_dir):
+#        shutil.rmtree(topology_dir)
+#    os.mkdir(topology_dir)
 
     calc_start_k = args.start_node_number[0] if args.start_node_number != None else 1
 
@@ -205,7 +205,7 @@ if __name__ == "__main__":
     # read the alignment into a dict, assumes phylip format with seqs unbroken on lines
     aln = {}
     alnfile = args.alignment[0]
-    print "reading alignment from " + alnfile.name
+    print("reading alignment from " + alnfile.name)
     firstline = True
     for line in alnfile:
         if firstline:
@@ -220,7 +220,7 @@ if __name__ == "__main__":
     # get the tree to subsample
     tree = None
     treefile = args.tree[0]
-    print "reading tree from " + treefile.name
+    print("reading tree from " + treefile.name)
     line = None
     while line != "":
         line = treefile.readline()
@@ -241,8 +241,6 @@ if __name__ == "__main__":
     if args.verbose:
         print("tree has " + str(len(leaves)) + " leaves")
 
-    os.chdir(temp_wd)
-
     # k is the node counter
     k = 1
 
@@ -256,6 +254,9 @@ if __name__ == "__main__":
     root_bipart_label = None
     for node in tree.iternodes():
 
+        os.chdir(temp_wd)
+        subprocess.call("rm *", shell=True)
+
         if k > calc_stop_k:
             print("Processed all nodes up to the stop node. Quitting now")
             exit()
@@ -266,7 +267,7 @@ if __name__ == "__main__":
                 try:
                     int(node.label)
                     new_label = "T"+node.label
-                    print "renaming tip node with numeric label '" + node.label + "' to " + new_label + " to avoid duplicating numeric internal node labels."
+                    print("renaming tip node with numeric label '" + node.label + "' to " + new_label + " to avoid duplicating numeric internal node labels.")
                     node.label = new_label
                 except ValueError:
                     continue
@@ -394,7 +395,7 @@ if __name__ == "__main__":
 
         # sanity check
         t = set()
-        for leafset in leafsets.itervalues():
+        for leafset in leafsets.values():
             assert len(leafset) > 0
             t.update(leafset)
 #        print("t: " + ",".join(sorted(list(t))))
@@ -417,7 +418,7 @@ if __name__ == "__main__":
             rep["n_completed"] = n_completed
             rep["raxml_path"] = raxml_path
             rep["seqs"] = {}
-            for subtree_name, leaf_names in leafsets.iteritems():
+            for subtree_name, leaf_names in leafsets.items():
                 
 #                while subtree_name not in rep["seqs"]: 
 #                    leafname = random.sample(leaf_names, 1)[0] #[0].label
@@ -452,8 +453,7 @@ if __name__ == "__main__":
         # now designate multiprocessing resource pool.
         # important to do this outside the node loop as regular garbage collecting does not seem
         # to apply to the threads! also, set maxtasksperchild to release memory and files!
-####        pool = Pool(processes=nprocs, maxtasksperchild=1) # only in python 2.7
-        pool = Pool(processes=nprocs)
+        pool = Pool(processes=nprocs, maxtasksperchild=1) # only in python 2.7
         pool.map(process_replicate, replicates)
         pool.close()
         pool.join()
@@ -468,7 +468,8 @@ if __name__ == "__main__":
 
         # now process the results. first open a file to hold topologies
         count_bipart_observed = 0
-        topo_file_name = topology_dir + "/" + node.label + ".obs_topologies.txt"
+#        topo_file_name = topology_dir + "/" + node.label + ".obs_topologies.txt"
+        topo_file_name = temp_wd + "/" + node.label + ".obs_topologies.txt"
         with open(topo_file_name, "w") as topo_file:
 
             while not results_queue.empty():
@@ -502,12 +503,12 @@ if __name__ == "__main__":
                     r_tree_string = "(" + ",".join(result["seq_labels"]["L"] + result["seq_labels"]["R"]) + ");" 
 
                     # check if all of the L or R seqs are identical, and none are in the other category (l vs. r)
-                    for key, n in result["identical"].iteritems():
+                    for key, n in result["identical"].items():
 
                         names = set()
                         names.update(n)
                         names.add(key)
-                        print names
+                        print(names)
                         
                         all_found_r = True
                         any_found_r = False
@@ -527,11 +528,6 @@ if __name__ == "__main__":
                             else:
                                 any_found_l = True
 
-#                        print "all_found_r " + str(all_found_r)
-#                        print "any_found_r " + str(any_found_r)
-#                        print "all_found_l " + str(all_found_l)
-#                        print "any_found_l " + str(any_found_l)
-                        
                         # not sure if having two options here should have any effect... i think they are the same for practical purposes
                         if (all_found_r and not any_found_l):
 #                            result["identical_side"] = "R"
@@ -614,11 +610,6 @@ if __name__ == "__main__":
         # clean up
         del(results_queue)
         del(n_completed)
-    
-#        exit()
-    
-        # redirecting stderr because it prints a bunch of failed calls. not sure why as the command seems to be working as expected...
-#        subprocess.call("rm *." + node.label + ".* 2> /dev/null", shell=True)
     
     print("\ndone.\nscores written to: " + score_result_file_path + \
         "\nlabeled tree written to: " + tree_result_file_path + \

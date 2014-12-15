@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
+"""usage: make_bs_alignments.py <alignment.phy> [partfile=<partfile_raxml_format>] [label=<output_label>] [randseed=<n>]"""
+
 if __name__ == '__main__':
 
     import copy, operator, os, random, re, sys 
     import numpy as np
     
     if len(sys.argv) < 2:
-        print """usage: make_bs_alignments.py <alignment.phy> [partfile=<partfile_raxml_format>] [label=<output_label>] [randseed=<n>]"""
+        print(__doc__)
         sys.exit(1)
 
     aln_filename = sys.argv[1]
-    part_filename = sys.argv[2]
 
     randseed = None
     output_label = None

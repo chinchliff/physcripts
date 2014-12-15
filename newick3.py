@@ -3,7 +3,7 @@
 import string, sys
 from shlex import shlex
 from phylo3 import Node
-import StringIO
+from io import StringIO
 
 class Tokenizer(shlex):
     """Provides tokens for parsing Newick-format trees"""
@@ -36,7 +36,7 @@ def parse(indata, ttable=None):
     or a string (converted to StringIO)
     """
     if type(indata) is str:
-        indata = StringIO.StringIO(indata)
+        indata = StringIO(indata)
     
     start_pos = indata.tell()
     tokens = Tokenizer(indata)
@@ -166,7 +166,7 @@ if __name__ == "__main__":
     s = "(a:3,(b:1e-05,c:1.3)int_|_and_33.5:5)root;"
     #s = "(a,b,c,d,e,f,g);"
     n = parse(s)
-    print
+    print()
     #print ascii.render(n)
     print(s)
     print(to_string(n))
