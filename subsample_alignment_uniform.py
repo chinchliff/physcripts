@@ -133,7 +133,7 @@ class Subsample():
         self.sampling_proportion = float(k) / (self.alignment.nparts() * self.alignment.ntaxa())
 
 
-    # iterators over the dicts to return data in sorted order
+    # iterators over the dicts to return data sorted by sampling proportion
     def taxa_sorted(self):
         return sorted(self.alignment.taxa(), \
             cmp = lambda p, q: cmp(self._parts_sampled_per_taxon[p], \
@@ -160,8 +160,13 @@ class Subsample():
                         s.write('0')
                 s.write('\n')
 
+<<<<<<< HEAD
         with open(self.output_label + '.subsampled.phy', 'w') as a:
             a.write('{0} {1}\n'.format(self.alignment.ntaxa(), self.alignment.ncols))
+=======
+        with open(self.output_label + '.phy', 'w') as a:
+            a.write('{} {}\n'.format(self.alignment.ntaxa(), self.alignment.ncols))
+>>>>>>> 28d941b4f6d547131418a997c3c79d5a1817657d
             for t in self.taxa_sorted():
                 a.write(t + ' ')
                 for p in self.parts_sorted():
