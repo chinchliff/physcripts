@@ -160,13 +160,8 @@ class Subsample():
                         s.write('0')
                 s.write('\n')
 
-<<<<<<< HEAD
         with open(self.output_label + '.subsampled.phy', 'w') as a:
             a.write('{0} {1}\n'.format(self.alignment.ntaxa(), self.alignment.ncols))
-=======
-        with open(self.output_label + '.phy', 'w') as a:
-            a.write('{} {}\n'.format(self.alignment.ntaxa(), self.alignment.ncols))
->>>>>>> 28d941b4f6d547131418a997c3c79d5a1817657d
             for t in self.taxa_sorted():
                 a.write(t + ' ')
                 for p in self.parts_sorted():
