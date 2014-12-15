@@ -124,7 +124,7 @@ class Subsample():
                     self._sample_bitmap[t][s] = False
 
             # open a random site, to be sure we have at least one sampled partition for all taxa
-            if (self._taxa_sampled_per_part[s] < 1):
+            if (self._parts_sampled_per_taxon[t] < 1):
                 r = self.alignment.random_part()
                 if self._sample_bitmap[t][r] != True:
                     self._parts_sampled_per_taxon[t] += 1
