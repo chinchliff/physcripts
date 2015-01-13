@@ -1,60 +1,51 @@
 #!/usr/bin/env python
 
-"""usage: make_bs_alignments.py <alignment.phy> [partfile=<partfile_raxml_format>] [label=<output_label>] [randseed=<n>]"""
+"""info"""
 
 if __name__ == '__main__':
 
-    import copy, operator, os, random, re, sys 
+    import argparse, copy, operator, os, random, re, sys 
     import numpy as np
+
+    parser = argparse.ArgumentParser(description=__doc__)
     
-    if len(sys.argv) < 2:
-        print(__doc__)
-        sys.exit(1)
+    parser.add_argument("-a", "--alignment-file", required=True, type=open, help="The name of the alignment in relaxed phylip format, to be subsampled.")
 
-    aln_filename = sys.argv[1]
+    parser.add_argument("-p", "--partitions-file", required=True, type=open, help="The name of the partitions file, in raxml format, to be used.")
 
-    randseed = None
-    output_label = None
-    part_filename = None
-    if len(sys.argv) > 3:
-        for argname, val in [(a[0].strip(), a[1].strip()) for a in [arg.split("=") for arg in sys.argv[3:]]]:
-            if argname == 'randseed':
-                randseed = int(val)
-            elif argname == 'label':
-                output_label = argval
-            elif argname == 'partfile':
-                part_filename = argval
+    parser.add_argument("-r", "--random-seed", type=int, help="A random seed to use.") 
 
-    if randseed == None:
-        random.seed()
+    parser.add_argument("-l", "--label", help="A label to be used for output files.") 
+    
+    args = parser.parse_args() 
+
+    if 'random_seed' in args:
+        random.seed(args.random_seed)
     else:
-        random.seed(randseed)
+        random.seed()
 
-    if output_label == None:
-        output_label = aln_filename.rsplit('.',1)[0]  
+    output_label = args.output_label if 'output_label' in args else args.alignment_file.name.rsplit('.',1)[0]
 
     # map the partitions to a dict
     parts = None
-    if part_filename is not None:
-        parts = {}
-        part_file = open(part_filename,'rb')
-        for line in part_file:
-            toks = [t.strip() for t in re.split(r'[,=]+',line)]
-            ptype = toks[0]
-            name = toks[1]
-            bounds = [b.strip() for b in toks[2].split("-")]
-            start = int(bounds[0])
-            end = int(bounds[1])
-            parts[start] = { 'name': name, 'type': ptype, 'start': start, 'end': end, 'taxa_sampled': 0, 'data': {}, }
-        part_starts = sorted(parts.keys())
-
+    parts = {}
+    for line in args.partitions_file:
+        toks = [t.strip() for t in re.split(r'[,=]+',line)]
+        ptype = toks[0]
+        name = toks[1]
+        bounds = [b.strip() for b in toks[2].split("-")]
+        start = int(bounds[0])
+        end = int(bounds[1])
+        parts[start] = { 'name': name, 'type': ptype, 'start': start, 'end': end, 'taxa_sampled': 0, 'data': {}, }
+    part_starts = sorted(parts.keys())
+    args.partitions_file.close()
+    
     # read in the alignment, recording the taxon names in a separate dict
     taxa = {}
     ntax = 0
     ncols = 0
-    aln_file = open(aln_filename,"rb")
     on_first_line = True
-    for line in aln_file:
+    for line in args.alignment_file:
         if len(line.strip()) < 3:
             continue
         toks = [l.strip() for l in line.split()]
@@ -76,6 +67,7 @@ if __name__ == '__main__':
                     parts[s]['data'][name] = seq[s-1:e]
         else:
             raise IndexError("too many items on line '" + line + "' in alignment") 
+    args.alignment_file.close()
 
     # assign sampling probs for loci from beta distribution a=3, b=5.
     # chance of drawing a sampling prob 0.1 < S < 0.71 is 95%
@@ -105,7 +97,7 @@ if __name__ == '__main__':
         taxa[t]['note'] = 'p increased from ' + str(taxa[t]['p']) + ' to ' + str(p[i])
         taxa[t]['p'] = p[i]
     
-    # precalculate acceptance probabilities for all cells in the sampling matrix
+    # precalculate proposal values for all cells in the sampling matrix
     p = np.random.uniform(0, 1, len(taxa) * len(parts))
 
     sample_bitmap = {}
