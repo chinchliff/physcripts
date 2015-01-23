@@ -17,7 +17,9 @@ if __name__ == '__main__':
 
     parser.add_argument("-l", "--label", help="A label to be used for output files.") 
     
-    args = parser.parse_args() 
+    parser.add_argument("-o", "--order", help="A list of the partitions in decreasing order of rate, used to ensure that faster evolving ones are subsampled less.")
+
+    args = parser.parse_args()
 
     if 'random_seed' in args:
         random.seed(args.random_seed)
@@ -26,8 +28,10 @@ if __name__ == '__main__':
 
     output_label = args.output_label if 'output_label' in args else args.alignment_file.name.rsplit('.',1)[0]
 
+    order = args.order.split(',') if 'order' in args else None
+
     # map the partitions to a dict
-    parts = None
+    part_start_map = {}
     parts = {}
     for line in args.partitions_file:
         toks = [t.strip() for t in re.split(r'[,=]+',line)]
@@ -36,8 +40,10 @@ if __name__ == '__main__':
         bounds = [b.strip() for b in toks[2].split("-")]
         start = int(bounds[0])
         end = int(bounds[1])
-        parts[start] = { 'name': name, 'type': ptype, 'start': start, 'end': end, 'taxa_sampled': 0, 'data': {}, }
-    part_starts = sorted(parts.keys())
+#        parts[start] = { 'name': name, 'type': ptype, 'start': start, 'end': end, 'taxa_sampled': 0, 'data': {}, }
+        parts[name] = { 'name': name, 'type': ptype, 'start': start, 'end': end, 'taxa_sampled': 0, 'data': {}, }
+        part_start_map[start] = name
+    part_starts = sorted(part_start_map.keys())
     args.partitions_file.close()
     
     # read in the alignment, recording the taxon names in a separate dict
@@ -56,33 +62,44 @@ if __name__ == '__main__':
                 ncols = toks[1]
                 print ntax, ncols
                 if parts is None:
-                    parts = {1: { 'name': 'all', 'type': 'DNA', 'start': 1, 'end': int(ncols), 'taxa_sampled': 0, 'data': {}, }}
-                    part_starts = [1,]
+                    parts = {'all': { 'name': 'all', 'type': 'DNA', 'start': 1, 'end': int(ncols), 'taxa_sampled': 0, 'data': {}, }}
+                    part_starts = {1: 'all'}
             else:
-                name = toks[0]
+                taxname = toks[0]
                 seq = toks[1]
-                taxa[name] = {'parts_sampled': 0}
-                for s in part_starts:
-                    e = parts[s]['end']
-                    parts[s]['data'][name] = seq[s-1:e]
+                taxa[taxname] = {'parts_sampled': 0}
+                for start in part_starts:
+                    n = part_start_map[start]
+                    end = parts[n]['end']
+                    parts[n]['data'][taxname] = seq[start-1:end]
         else:
             raise IndexError("too many items on line '" + line + "' in alignment") 
     args.alignment_file.close()
 
     # assign sampling probs for loci from beta distribution a=3, b=5.
     # chance of drawing a sampling prob 0.1 < S < 0.71 is 95%
-    p = np.random.beta(3,5,len(parts))
-    for i, s in enumerate(parts.keys()):
-        parts[s]['p'] = p[i]
+#    p = np.random.beta(3,5,len(parts))
+#    for i, s in enumerate(parts.keys()):
+#        parts[s]['p'] = p[i]
 
     # for 10% of loci (minimum 1), assign sampling probs from beta dist a=4, b=3.
     # chance of drawing a sampling prob 0.22 < S < 0.88 is 95%
-    lucky_parts = random.sample(parts.keys(), max(len(parts)/10,1))
-    p = np.random.beta(4,3,len(lucky_parts))
-    for i, s in enumerate(lucky_parts):
-        parts[s]['note'] = 'p increased from ' + str(parts[s]['p']) + ' to ' + str(p[i])
-        parts[s]['p'] = p[i]
-        
+#    lucky_parts = random.sample(parts.keys(), max(len(parts)/10,1))
+#    p = np.random.beta(4,3,len(lucky_parts))
+#    for i, s in enumerate(lucky_parts):
+#        parts[s]['note'] = 'p increased from ' + str(parts[s]['p']) + ' to ' + str(p[i])
+#        parts[s]['p'] = p[i]
+
+    n_lucky_parts = max(len(parts)/10,1)
+    probs = list(np.random.beta(4,3,n_lucky_parts))
+    for p in np.random.beta(3,5,len(parts) - n_lucky_parts):
+        probs.append(p)
+
+    probs.sort(reverse=True)
+    for i, n in enumerate(order if order is not None else parts):
+        print i, n
+        parts[n]['p'] = probs[i]
+
     # assign sampling probs for taxa from beta distribution a=3, b=5.
     # chance of drawing a sampling prob 0.1 < S < 0.71 is 95%
     p = np.random.beta(3,5,len(taxa))
@@ -107,17 +124,17 @@ if __name__ == '__main__':
         if t not in sample_bitmap:
             sample_bitmap[t] = {}
 
-        for s in parts:
-            if s not in sample_bitmap[t]:
-                sample_bitmap[t][s] = {}
+        for n in parts:
+            if n not in sample_bitmap[t]:
+                sample_bitmap[t][n] = {}
 
-            if parts[s]['p'] * taxa[t]['p'] > p[i]:
-                sample_bitmap[t][s] = True
-                parts[s]['taxa_sampled'] += 1
+            if parts[n]['p'] * taxa[t]['p'] > p[i]:
+                sample_bitmap[t][n] = True
+                parts[n]['taxa_sampled'] += 1
                 taxa[t]['parts_sampled'] += 1
                 k += 1
             else:
-                sample_bitmap[t][s] = False
+                sample_bitmap[t][n] = False
 
             i += 1
         

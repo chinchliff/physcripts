@@ -35,7 +35,7 @@ class Alignment():
         self._taxa = []
         on_first_line = True
         for line in alignment_file:
-            toks = [l.strip() for l in line.split()]
+            toks = [l.strip() for l in line.strip().split()]
             if len(toks) > 1:
                 if on_first_line == True:
                     on_first_line = False
