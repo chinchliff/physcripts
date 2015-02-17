@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""info"""
+"""subsample an alignment using beta distributions (with hard-coded parameters) to model sampling probabilities"""
 
 if __name__ == '__main__':
 

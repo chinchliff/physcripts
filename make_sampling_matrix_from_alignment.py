@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     outfile = open(infname.rsplit(".phy",1)[0] + ".sitewisesamplingmatrix.csv","w")
 
-    empty_chars = {"N":"", "-":""}
+    empty_chars = set(["N","-"])
 
     first = True
     for line in infile:

@@ -8,7 +8,7 @@ BRANCHLENGTH = 0; INTERNODES = 1
 class Node:
     def __init__(self):
         self.data = {}
-        self.isroot = False
+#        self.isroot = False
         self.istip = False
         self.label = None
         self.length = 0
@@ -18,10 +18,19 @@ class Node:
         self.excluded_dists = []
         self.comment = None
 
-#    @property
-#    def is_tip(self):
+    @property
+    def is_root(self):
+        return self.parent is None
+
+    @property
+    def isroot(self):
+        return self.parent is None
+
+    @property
+    def is_tip(self):
 #        return self.istip
-#    
+        return len(self.children) < 1
+    
 #    @is_tip.setter
 #    def is_tip(self, is_tip):
 #        self.istip = is_tip        
@@ -155,7 +164,7 @@ class Node:
                 # prune knuckles at the root of the tree if necessary
                 only_child = root_joint.children[0]
                 only_child.parent = None
-                only_child.isroot = True
+#                only_child.isroot = True
                 root_joint = only_child
         
         return p
@@ -254,7 +263,7 @@ class Node:
                     del d[oldnode]; del d[n]
                     child = n.children[0]
                     child.parent = None
-                    child.isroot = True
+#                    child.isroot = True
                     d["newroot"] = child
                     d["oldroot"] = d[child]
                     n = child
@@ -366,7 +375,7 @@ def get_tree_rooted_on(target_node):
 	
 			root_child.length += prev_child.length / n
 	
-	new_root.isroot = True
+#	new_root.isroot = True
 	return new_root
 
 def node2size(node, d=None):
@@ -382,8 +391,8 @@ def node2size(node, d=None):
     return d
 
 def reroot(oldroot, newroot): # needs some work
-    oldroot.isroot = False
-    newroot.isroot = True
+#    oldroot.isroot = False
+#    newroot.isroot = True
     v = []
     n = newroot
     while 1:
