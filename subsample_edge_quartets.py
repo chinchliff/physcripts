@@ -440,7 +440,7 @@ if __name__ == "__main__":
 
             replicates.append(rep)
 
-        # clear any lingering files (e.g. from previous runs) that could interfere with raxml
+        # clear any lingering files (e.g. from previous runs) that could interfere with raxml.
         # redirecting stderr because it prints a bunch of failed calls not sure why as the
         # command seems to be working as expected...
         subprocess.call("rm *." + node.label + ".* 2> /dev/null", shell=True)
