@@ -246,7 +246,7 @@ class PhylogeneticSubsampler(_Subsampler):
         a = rates_labels.difference(parts_labels)
         b = parts_labels.difference(rates_labels)
         
-        # might want to allow a rates set for a superset of partitions in the alignment
+        # might want to allow a rate set for a superset of partitions in the alignment
         if not len(a) == 0 and len(b) == 0:
             raise ValueError('Name mismatch between specified rates and partitions. Rates are ' \
                              'specified for partitions [{}] which are not known, and/or known ' \
