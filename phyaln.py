@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+def node_label_string(n):
+    return '['+','.join([l.label for l in n.leaves()])+']'
+
 class Alignment():
 
     def __init__(self, alignment, partitions):
@@ -211,8 +214,8 @@ class SimpleSubsampler(_Subsampler):
 
 class PhylogeneticSubsampler(_Subsampler):
 
-    IMPOSSIBLY_HIGH_RATE = 1000000
-    NESTED_SAMPLING_RATE = 0.01
+    MAX_RATE = 1
+    NESTED_SAMPLING_RATE = 0.1
     
     def __init__(self, alignment, tree, rates):
         _Subsampler.__init__(self, alignment)
@@ -238,6 +241,7 @@ class PhylogeneticSubsampler(_Subsampler):
                              'the tree but not in alignment, and/or [{}] are in the alignment ' \
                              'but not in the tree.'.format(', '.join(a),', '.join(b)))
         self.tree = t
+        self.tree_depth = t.depth
     
     def set_rates(self, rates):
         rates_labels = set(rates.keys())
@@ -251,32 +255,36 @@ class PhylogeneticSubsampler(_Subsampler):
             raise ValueError('Name mismatch between specified rates and partitions. Rates are ' \
                              'specified for partitions [{}] which are not known, and/or known ' \
                              'partitions [{}] do not have specified rates.'.format(', '.join(a),', '.join(b)))
-        self.rates = rates        
 
-        lowest_rate = self.IMPOSSIBLY_HIGH_RATE
+        lowest_rate = self.MAX_RATE
+        highest_rate = 0
         for name, r in rates.iteritems():
             if r < lowest_rate:
                 self.slowest_partition = name
                 lowest_rate = r
+            elif r > highest_rate:
+                highest_rate = r
+
+        scaled_rates = {}
+        for name, r in rates.iteritems():
+            scaled_rates[name] = r / highest_rate
+
+        self.rates = scaled_rates
 
     @staticmethod
     def has_parent_sampled_for(n, p):
-#        print 'start : ' + '['+','.join([l.label for l in n.leaves()])+']'
         while not n.is_root:
             n = n.parent
-#            print('['+','.join([l.label for l in n.leaves()])+']')
             if p in n.sampled_partitions:
                 return True
         return False
         
-    @staticmethod
-    def get_sampling_frequency(n, p):
-        # return the sampling frequency for this this rate at this node, based on:
-        #   - the depth of of the node
-        #   - the rate of the partition
-        #   - the number of nodes already sampled for this partition
-        
-        return 0.5 # dummy
+    def sampling_rate(self, n, p):
+        '''return the rate at which this partition will be assigned to a given node, based on:
+        (1) the depth of of the node,
+        (2) the sampling rate of the partition,
+        (3) the number of nodes already sampled for this partition'''
+        return abs((n.depth / self.tree_depth) - self.rates[p]) / (len(self.alignment.get_partition(p).sampled_nodes) + 1)
 
     def set_sampled_partition(self, n, p):
         self.record_sampled_node_on_partition(n, p)
@@ -303,7 +311,7 @@ class PhylogeneticSubsampler(_Subsampler):
                 continue
             
             for p in self.alignment.partition_labels():
-                s = self.get_sampling_frequency(n, self.rates[p])
+                s = self.sampling_rate(n, p)
             
                 if s > random.random():
                     if not self.has_parent_sampled_for(n, p):
@@ -311,8 +319,106 @@ class PhylogeneticSubsampler(_Subsampler):
                     else:
                         if self.NESTED_SAMPLING_RATE > random.random():
                             self.set_sampled_partition(n,p)
+
+        # attempt to pick sampled taxa in a way that maximizes lineage representation
+        for n in self.tree.iternodes(phylo3.PREORDER):
+            for p in n.sampled_partitions:
+
+                # calculate in advance the proportion of taxa to be sampled for a clade
+                d = len(n.leaves())
+                c = min(d * self.rates[p] + 2, d)
+
+                self._recur_sample(n, c, p)
+
+    def _recur_sample(self, node, count, p):
+
+        import random
+
+        print('starting node' + node_label_string(node) + '; count = ' + str(count))
+
+        # if we hit a tip, designate it as sampled and move on
+        if node.is_tip:
+            assert count == 1
+            self.sample(node.label, p)
+            return
+        else:
+            assert len(node.children) > 0
+
+        # otherwise, we are at an internal node: distribute sample counts to its children
+
+        # if there is only one child, then just move on to it
+        if len(node.children) < 2:
+            return self._recur_sample(node.children[0], count, p)
+        
+        # let t[d] be the number of tips to be sampled within daughter node d
+        t = {}
+        
+        # select the largest and smallest daughters of n (in case n is multifurcating)
+        largest = node.children[0]
+        smallest = node.children[1]
+        size = {}
+        size[largest] = len(largest.leaves())
+        size[smallest] = len(smallest.leaves())
+        for d in node.children:
+            size[d] = len(d.leaves())
+            if size[d] > size[largest]:
+                largest = d
+            elif size[d] < size[smallest]:
+                smallest = d
+
+        # make sure we sample at least one tip from each of these if we can
+        t[largest] = 1
+        x = 1 # keep track of num samples assigned to daughter clades in x
+        if (count > 1):
+            t[smallest] = 1
+            x += 1
+
+        # designate one tip for sampling in as many other daughter clades as we can
+        random.shuffle(node.children) # assign to a random subset if can't do all of them
+        for d in node.children:
+            if x >= count:
+                break
+            if d not in t:
+                t[d] = 1
+                x += 1
+        
+        # attempt to sample any additional tips at the partition-specific rate
+        while x < count:
+            d = random.choice(node.children)
+            if t[d] < size[d] and self.rates[p] > random.random(): 
+                t[d] += 1
+                x += 1
+
+        # recur to distribute the sample counts among the specified descendants down to the tips
+        for d in node.children:
+            if d in t:
+                self._recur_sample(d, t[d], p)
         
     def report_sampled_partitions(self):
         for n in self.tree.iternodes():
-            print('['+','.join([l.label for l in n.leaves()])+']')
+            print(node_label_string(n))
             print('    '+','.join(n.sampled_partitions))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

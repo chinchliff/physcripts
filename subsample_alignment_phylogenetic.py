@@ -5,11 +5,12 @@
 from phyaln import Alignment, PhylogeneticSubsampler
 
 def read_rate_file(f):
-    rates = {}
-    for parts in (l.split('=') for l in f):
-        if len(parts) == 2:
-            name, rate = (p.strip() for p in parts)
-            rates[name] = float(rate)
+    with open(f, 'r') as infile:
+        rates = {}
+        for parts in (l.split('=') for l in infile):
+            if len(parts) == 2:
+                name, rate = (p.strip() for p in parts)
+                rates[name] = float(rate)
     return rates
     
 if __name__ == '__main__':
@@ -21,7 +22,7 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--alignment', type=open, required=True, \
         help='the location of the extended phylip alignment file to be subsampled.')
 
-    parser.add_argument('-r', '--rates', type=open, required=True, \
+    parser.add_argument('-r', '--rates', type=read_rate_file, required=True, \
         help='the evolutionary rates (substitution/time) underlying the models for the partitions.')
     
     parser.add_argument('-t', '--tree', type=open, required=True, \
@@ -40,9 +41,8 @@ if __name__ == '__main__':
     
     a = Alignment(args.alignment, args.partitions)
     t = newick3.parse(args.tree)
-    r = read_rate_file(args.rates)
     
-    s = PhylogeneticSubsampler(alignment=a, tree=t, rates=r)
+    s = PhylogeneticSubsampler(alignment=a, tree=t, rates=args.rates)
     
     s.subsample()
 
