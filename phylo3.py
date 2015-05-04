@@ -1,6 +1,7 @@
 """Classes and methods for performing basic operations on phylogenetic trees."""
 
 from copy import deepcopy as copy
+import random
 
 PREORDER = -99999; POSTORDER = 123456
 BRANCHLENGTH = 0; INTERNODES = 1
@@ -82,10 +83,29 @@ class Node:
                 return node
         return None
 
+    def breadth_first(self):
+        '''return nodes in breadth first order starting at this node'''
+        stack = [self,]
+        nodes = []
+        while len(stack) > 0:
+            n = stack.pop(0)
+            nodes.append(n)
+            for child in n.children:
+                stack.append(child)
+        return nodes
+
+    def branch_lengths(self):
+        return [n.length for n in self.iternodes()]
+    
+    @property
+    def length(self):
+        return sum(self.branch_lengths)
+
     def iternodes(self, order=PREORDER, v=None):
         '''returns a list of nodes descendant from self - including self'''
         if order == PREORDER:
             yield self
+        random.shuffle(self.children)
         for child in self.children:
             for d in child.iternodes(order):
                 yield d

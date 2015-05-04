@@ -34,6 +34,9 @@ if __name__ == '__main__':
     parser.add_argument('-x', '--random-seed', type=int, required=False, \
         help='an integer seed for the random number generator function')
     
+    parser.add_argument('-f', '--reduction-factor', type=float, required=False, \
+        help='a decimal value specifying how sparse to make the subsampling. the number of taxa that will be subsampled will be reduced proportionally to this value, thus a value of f 0.5 leads to a reduction by (approximately) half')
+    
     parser.add_argument('-n', '--output-label', required=False, default='', \
         help='a label to be attached to output files')
 
@@ -41,8 +44,9 @@ if __name__ == '__main__':
     
     a = Alignment(args.alignment, args.partitions)
     t = newick3.parse(args.tree)
+    f = args.reduction_factor if 'reduction_factor' in args else 1
     
-    s = PhylogeneticSubsampler(alignment=a, tree=t, rates=args.rates)
+    s = PhylogeneticSubsampler(alignment=a, tree=t, rates=args.rates, reduction_factor=f)
     
     s.subsample()
 
@@ -50,5 +54,5 @@ if __name__ == '__main__':
     
     s.report_sampled_partitions()
     
-    print('files have been written to: ' + s.output_label + '.sampling_matrix.txt, ' + s.output_label + '.subsampled.phy\n' \
+    print('files have been written to:\n' + s.output_label + '.sampling_matrix.txt\n' + s.output_label + '.phy\n' + s.output_label + '.partitions.txt\n' \
               'sampling proportion is ' + str(s.get_sampling_proportion()))

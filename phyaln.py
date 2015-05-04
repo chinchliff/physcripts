@@ -128,6 +128,7 @@ class _Subsampler():
         return float(self.k) / (self.alignment.nparts() * self.alignment.ntaxa())
     
     def _validate(self, t, p):
+        print t
         assert t in self._sample_bitmap
         assert p in self._sample_bitmap[t]
         assert t in self._num_parts_sampled_by_taxon
@@ -137,7 +138,7 @@ class _Subsampler():
         random.seed(s)
 
     def sample(self, t, p):
-        self._validate(t,p)
+        self._validate(t, p)
         self._sample_bitmap[t][p] = True
         self._num_taxa_sampled_by_part[p] += 1
         self._num_parts_sampled_by_taxon[t] += 1
@@ -153,6 +154,11 @@ class _Subsampler():
     def is_sampled(self, t, p):
         self._validate(t,p)
         return self._sample_bitmap[t][p]
+    
+    def partitions_sampled_for_taxon(self, t):
+        for p in self.alignment.partition_labels():
+            if self.is_sampled(t, p):
+                yield self.alignment.get_partition(p)
     
     def number_parts_sampled_for(self, t):
         return self._num_parts_sampled_by_taxon[t]
@@ -175,6 +181,20 @@ class _Subsampler():
         self.output_label = self.alignment.base_name + '.' + \
             (self.DEFAULT_LABEL + '.' + label if len(label) > 0 else self.DEFAULT_LABEL)
         
+        # first calculate new positions for partitions
+        new_start = {}
+        new_end = {}
+        last_pos = 0
+        for p in self.partition_labels_sorted():
+            pp = self.alignment.get_partition(p)
+            new_start[p] = last_pos + 1
+            last_pos = last_pos + pp.end - pp.start + 1
+            new_end[p] = last_pos
+        
+        with open(self.output_label + '.partitions.txt', 'w') as q:
+            for p in self.partition_labels_sorted():
+                q.write('DNA, ' + p + ' = ' + str(new_start[p]) + '-' + str(new_end[p]) + '\n')
+        
         with open(self.output_label + '.sampling_matrix.tsv', 'w') as s:
             s.write('\t'+'\t'.join(self.partition_labels_sorted())+'\n')
             for t in self.taxon_labels_sorted():
@@ -192,7 +212,7 @@ class _Subsampler():
                     if self.is_sampled(t,p):
                         a.write(pp.get_seq_for_taxon(t))
                     else:
-                        a.write('-' * (pp.end - pp.start))
+                        a.write('-' * (pp.end - pp.start + 1))
                 a.write('\n')
 
 class SimpleSubsampler(_Subsampler):
@@ -214,13 +234,18 @@ class SimpleSubsampler(_Subsampler):
 
 class PhylogeneticSubsampler(_Subsampler):
 
-    MAX_RATE = 1
+    MAX_RATE = 1000000
     NESTED_SAMPLING_RATE = 0.1
+    MIN_SAMPLED_CLADE_SIZE = 7
+    MIN_SAMPLED_TAXA_PER_CLADE = 4
     
-    def __init__(self, alignment, tree, rates):
+    def __init__(self, alignment, tree, rates, reduction_factor = 1):
         _Subsampler.__init__(self, alignment)
         self.set_tree(tree)
         self.set_rates(rates)
+        self.reduction_factor = reduction_factor
+
+        assert self.MIN_SAMPLED_CLADE_SIZE > self.MIN_SAMPLED_TAXA_PER_CLADE
 
         for p in self.alignment.partitions():
             p.sampled_nodes = set()
@@ -242,6 +267,9 @@ class PhylogeneticSubsampler(_Subsampler):
                              'but not in the tree.'.format(', '.join(a),', '.join(b)))
         self.tree = t
         self.tree_depth = t.depth
+        
+        if self.tree_depth == 0:
+            raise ValueError('Trees must have branch lengths (and should be ultrametric).')
     
     def set_rates(self, rates):
         rates_labels = set(rates.keys())
@@ -259,6 +287,9 @@ class PhylogeneticSubsampler(_Subsampler):
         lowest_rate = self.MAX_RATE
         highest_rate = 0
         for name, r in rates.iteritems():
+            if r > self.MAX_RATE:
+                raise ValueError('Maximum allowed rate for input is ' + str(MAX_RATE))
+                
             if r < lowest_rate:
                 self.slowest_partition = name
                 lowest_rate = r
@@ -301,9 +332,10 @@ class PhylogeneticSubsampler(_Subsampler):
         import phylo3, random
         self._init_subsample()
         
-        for n in self.tree.iternodes(phylo3.PREORDER):
+        for n in self.tree.breadth_first():
         
-            if n.is_tip:
+#            if n.is_tip:
+            if len(n.leaves()) < self.MIN_SAMPLED_CLADE_SIZE:
                 continue
                 
             if n.is_root:
@@ -318,7 +350,7 @@ class PhylogeneticSubsampler(_Subsampler):
                         self.set_sampled_partition(n, p)
                     else:
                         if self.NESTED_SAMPLING_RATE > random.random():
-                            self.set_sampled_partition(n,p)
+                            self.set_sampled_partition(n, p)
 
         # attempt to pick sampled taxa in a way that maximizes lineage representation
         for n in self.tree.iternodes(phylo3.PREORDER):
@@ -326,15 +358,42 @@ class PhylogeneticSubsampler(_Subsampler):
 
                 # calculate in advance the proportion of taxa to be sampled for a clade
                 d = len(n.leaves())
-                c = min(d * self.rates[p] + 2, d)
+                
+                # can't be less than MIN_SAMPLED_TAXA_PER_CLADE
+                c = max((d * self.rates[p] * self.reduction_factor), self.MIN_SAMPLED_TAXA_PER_CLADE)
+                
+                # can't be greater than the number of leaves
+                c = min(c, d)
 
                 self._recur_sample(n, c, p)
+
+        # for any unsampled taxa, sample one of the partitions sampled for the closest sampled taxon
+        # we could also just sample a random partition...
+        for t in [l.label for l in self.tree.leaves()]:
+
+            if self.number_parts_sampled_for(t) < 1:
+                part_to_sample = None
+
+                p = n
+                while p.parent is not None:
+                    p = p.parent
+                    for r in [l.label for l in p.leaves()]:
+                        if r != t:
+                            available_parts = list(self.partitions_sampled_for_taxon(r))
+                            if len(available_parts) > 0:
+                                part_to_sample = random.choice(available_parts).name
+                                break
+
+                if part_to_sample is None:
+                    raise Exception('could not find a sampled partition for any tip in the tree?')
+
+                self.sample(t, part_to_sample)
 
     def _recur_sample(self, node, count, p):
 
         import random
 
-        print('starting node' + node_label_string(node) + '; count = ' + str(count))
+#        print('starting node' + node_label_string(node) + '; count = ' + str(count))
 
         # if we hit a tip, designate it as sampled and move on
         if node.is_tip:
