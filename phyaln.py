@@ -128,7 +128,7 @@ class _Subsampler():
         return float(self.k) / (self.alignment.nparts() * self.alignment.ntaxa())
     
     def _validate(self, t, p):
-        print t
+#        print t
         assert t in self._sample_bitmap
         assert p in self._sample_bitmap[t]
         assert t in self._num_parts_sampled_by_taxon
