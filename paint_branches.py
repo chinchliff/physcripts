@@ -2,6 +2,7 @@
 
 import argparse, newick3, phylo3, sys, os
 import figtree_blocks
+from StringIO import StringIO
 
 BLACK = "000000"
 
@@ -131,6 +132,7 @@ if __name__ == "__main__":
         use_node_labels_as_data = False
         first_line = True
         for line in args.node_values[0].readlines():
+#            print parts
             parts = line.strip().split(",")
         
             if first_line:
@@ -139,6 +141,7 @@ if __name__ == "__main__":
                 continue
             
             if len(parts) > 1:
+#                print parts[1:]
                 data[parts[0]] = dict(zip(column_labels[1:],[float(p) for p in parts[1:]]))
         args.node_values[0].close()
 
@@ -147,7 +150,7 @@ if __name__ == "__main__":
     while tree == None and line != "":
         line = args.tree[0].readline()
         try:
-            tree = newick3.parse(line)
+            tree = newick3.parse(StringIO(line))
         except AttributeError:
             continue
     if tree == None:
