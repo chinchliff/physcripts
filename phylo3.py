@@ -98,8 +98,8 @@ class Node:
         return [n.length for n in self.iternodes()]
     
     @property
-    def length(self):
-        return sum(self.branch_lengths)
+    def subtree_length(self):
+        return sum(self.branch_lengths())
 
     def iternodes(self, order=PREORDER, v=None):
         '''returns a list of nodes descendant from self - including self'''

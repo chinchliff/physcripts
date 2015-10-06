@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """Consider each node N in the rooted tree to identify a bipartition X, which is represented in
 the tree as the outgoing edge connecting N to its parent M. In a fully bifurcating tree, the nodes N and M will each have two other connected edges, which connect the nodes A and B to N, and C and D to M. If we unroot the tree, then the bipartition X can be written as X = \{A,B\}|\{C,D\}, and the branch represented by X in the rooted tree can be represented as the internal branch in a four-tip unrooted topology with tips T = \{A, B, C, D\}, with an internal branch representing X, and each tip t_i in T corresponding to a set of leaves S_i in the original tree.
 
@@ -8,6 +8,7 @@ _title = "Estimate quartet jackknife ICA support on a tree"
 
 import argparse, newick3, os, phylo3, random, shutil, subprocess, sys, time
 from multiprocessing import Lock, Manager, Pool, Queue
+from io import StringIO
 
 DEFAULT_RAXML = "raxmlHPC-AVX"
 SECONDS_PER_MINUTE = 60
@@ -224,11 +225,16 @@ if __name__ == "__main__":
     line = None
     while line != "":
         line = treefile.readline()
-        try:
-            tree = newick3.parse(line)
-            break
-        except AttributeError:
-            pass
+        if len(line.strip()) < 1:
+            continue
+#        print(line)
+#        try:
+        tree = newick3.parse(StringIO(line))
+#        print('found tree')
+#        print(tree)
+        break
+#        except AttributeError:
+#            pass
     if tree == None:
         sys.exit("Could not find a tree in the treefile: " + treefile.name)
     args.tree[0].close()

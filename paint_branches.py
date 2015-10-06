@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse, newick3, phylo3, sys, os
 import figtree_blocks
@@ -79,15 +79,15 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Annotate a labeled tree with figtree-format branch color labels by binning node values into ranges associated with colors.")
 
-    parser.add_argument("-t", "--tree", type=file, nargs=1, required=True, help="A newick tree file with labeled internal nodes. If a node-values file is supplied, then the node labels in the tree will be used to match to the rows of the node-values file. Otherwise, the node labels themselves will be interpreted as the values to be used for tree painting.")
+    parser.add_argument("-t", "--tree", type=open, nargs=1, required=True, help="A newick tree file with labeled internal nodes. If a node-values file is supplied, then the node labels in the tree will be used to match to the rows of the node-values file. Otherwise, the node labels themselves will be interpreted as the values to be used for tree painting.")
 
-    parser.add_argument("-c", "--color-bins", type=file, nargs=1, required=True, help="A comma-separated list containing min and max values for the bins to which node values will be assigned, and the color which each branch falling into that bin should be painted.")
+    parser.add_argument("-c", "--color-bins", type=open, nargs=1, required=True, help="A comma-separated list containing min and max values for the bins to which node values will be assigned, and the color which each branch falling into that bin should be painted.")
 
-    parser.add_argument("-d", "--node-values", type=file, nargs=1, help="A list containing N columns of comma-separated values corresponding to nodes in the tree, where the first column is the node label of some internal node in the tree, and the other columns are values assigned to that node. If a node-values file is supplied, the --label argument must used to specify which value column(s) in the node-values file to be used for tree painting.")
+    parser.add_argument("-d", "--node-values", type=open, nargs=1, help="A list containing N columns of comma-separated values corresponding to nodes in the tree, where the first column is the node label of some internal node in the tree, and the other columns are values assigned to that node. If a node-values file is supplied, the --label argument must used to specify which value column(s) in the node-values file to be used for tree painting.")
 
     parser.add_argument("-l", "--label", nargs="+", help="One or more column labels from the node-values file whose values will be used for tree-painting. If multiple values are specified, one output tree will be produced for each column of values, painted according to the color scheme specified by the color-bins file. If no node-values file has been designated, all --label values will be ignored.")
     
-    parser.add_argument("-v", "--tip-values", type=file, nargs=1, help="A list containing 2 columns of comma-separated values, where the first item on each line is the tip label and the second is the value to be assigned to the the tip. This may be used to assign values to tip nodes in a tree whose internal nodes are assigned values with node labels.")
+    parser.add_argument("-v", "--tip-values", type=open, nargs=1, help="A list containing 2 columns of comma-separated values, where the first item on each line is the tip label and the second is the value to be assigned to the the tip. This may be used to assign values to tip nodes in a tree whose internal nodes are assigned values with node labels.")
 
     parser.add_argument("-o", "--output-dir", nargs=1, help="A location to which painted trees should be saved. If not specified they will be saved to the current working directory.")
     

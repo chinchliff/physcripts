@@ -35,6 +35,9 @@ def parse(indata, ttable=None):
     input is any file-like object that can be coerced into shlex,
     or a string (converted to StringIO)
     """
+    
+#    print(indata)
+    
     if type(indata) is str:
         indata = StringIO(indata)
     
@@ -46,14 +49,13 @@ def parse(indata, ttable=None):
 
     prev_tok = None
 
-    while 1:
+    while True:
         token = tokens.get_token()
-        #print token,
         if token == ';' or token == '':
             assert lp == rp, \
                    'unbalanced parentheses in tree description'
             break
-
+        
         # internal node
         elif token == '(':
             lp = lp+1
@@ -62,7 +64,6 @@ def parse(indata, ttable=None):
             if node:
                 node.add_child(newnode)
             node = newnode
-
         elif token == ')':
             rp = rp+1
             node = node.parent
@@ -105,11 +106,9 @@ def parse(indata, ttable=None):
             else: # label
                 # translation table for internal nodes labels?
                 node.label = token
-
         prev_tok = token
         #print token, node
         
-
     indata.seek(start_pos)
 
 ##     if rooted:

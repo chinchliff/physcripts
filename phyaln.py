@@ -128,7 +128,7 @@ class _Subsampler():
         return float(self.k) / (self.alignment.nparts() * self.alignment.ntaxa())
     
     def _validate(self, t, p):
-        print t
+#        print t
         assert t in self._sample_bitmap
         assert p in self._sample_bitmap[t]
         assert t in self._num_parts_sampled_by_taxon
@@ -168,14 +168,16 @@ class _Subsampler():
     
     # iterators over the dicts to return data sorted by sampling proportion
     def taxon_labels_sorted(self):
+        import functools
         return sorted(self.alignment.taxon_labels(), \
-            cmp = lambda p, q: cmp(self._num_parts_sampled_by_taxon[p], \
-                                   self._num_parts_sampled_by_taxon[q]), reverse=True)
+            key = functools.cmp_to_key(lambda p, q: (self._num_parts_sampled_by_taxon[p] > self._num_parts_sampled_by_taxon[q]) - \
+                                                    (self._num_parts_sampled_by_taxon[p] < self._num_parts_sampled_by_taxon[q])), reverse=True)
 
     def partition_labels_sorted(self):
+        import functools
         return sorted(self.alignment.partition_labels(), 
-            cmp = lambda p, q: cmp(self._num_taxa_sampled_by_part[p], \
-                                   self._num_taxa_sampled_by_part[q]), reverse=True)
+            key = functools.cmp_to_key(lambda p, q: (self._num_taxa_sampled_by_part[p] > self._num_taxa_sampled_by_part[q]) - \
+                                                    (self._num_taxa_sampled_by_part[p] < self._num_taxa_sampled_by_part[q])), reverse=True)
 
     def write_subsampled_output(self, label=''):
         self.output_label = self.alignment.base_name + '.' + \
@@ -286,7 +288,7 @@ class PhylogeneticSubsampler(_Subsampler):
 
         lowest_rate = self.MAX_RATE
         highest_rate = 0
-        for name, r in rates.iteritems():
+        for name, r in rates.items():
             if r > self.MAX_RATE:
                 raise ValueError('Maximum allowed rate for input is ' + str(MAX_RATE))
                 
@@ -297,7 +299,7 @@ class PhylogeneticSubsampler(_Subsampler):
                 highest_rate = r
 
         scaled_rates = {}
-        for name, r in rates.iteritems():
+        for name, r in rates.items():
             scaled_rates[name] = r / highest_rate
 
         self.rates = scaled_rates
